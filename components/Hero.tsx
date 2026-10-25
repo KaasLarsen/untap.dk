@@ -22,7 +22,7 @@ export function Hero() {
           Untap, Upkeep, Draw.
         </h1>
         <p className="animate-fade-rise delay-2 mt-6 max-w-xl text-base leading-relaxed text-parchment-muted sm:text-lg">
-          Den danske hub for Magic — dæklister, strategi og marked, bygget i mørket.
+          Den danske hub for Magic — decks, strategi og marked, bygget i mørket.
         </p>
         <div className="animate-fade-rise delay-3 mt-10 flex flex-wrap items-center gap-4">
           <Link
@@ -32,10 +32,10 @@ export function Hero() {
             Se artikler
           </Link>
           <Link
-            href="/daek"
+            href="/deck"
             className="inline-flex items-center border border-line px-5 py-3 text-sm text-parchment-muted transition-colors hover:border-parchment-muted hover:text-parchment"
           >
-            Kommer snart: dæklister
+            Kommer snart: decklists
           </Link>
         </div>
       </div>

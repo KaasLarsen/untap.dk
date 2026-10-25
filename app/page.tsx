@@ -10,15 +10,15 @@ export default async function Home() {
     <>
       <Hero />
 
-      <Section id="daeklister" eyebrow="Søjle 01" title="Dæklister">
+      <Section id="decklists" eyebrow="Søjle 01" title="Decklists">
         <p>
           Overblik over, hvad der spilles, og hvad der er værd at prøve — fra
           Standard til Commander. Listen vokser, når data og Scryfall-integration
           er klar.
         </p>
         <p className="mt-4">
-          <Link href="/daek" className="text-accent-bright underline-offset-4 hover:underline">
-            Dæk — kommer snart
+          <Link href="/deck" className="text-accent-bright underline-offset-4 hover:underline">
+            Deck — kommer snart
           </Link>
         </p>
       </Section>
@@ -54,15 +54,6 @@ export default async function Home() {
             Marked — kommer snart
           </Link>
         </p>
-      </Section>
-
-      <Section id="affiliate" eyebrow="Mission" title="Støt via Kelz0r">
-        <p>
-          Når du køber via vores links, støtter du siden. Vi samarbejder med
-          Kelz0r og andre partnere, så anbefalingerne også kan bære driften —
-          ærligt markeret, uden at skjule hvorfor linket er der.
-        </p>
-        {/* TODO: Affiliate click tracking + Kelz0r deep links when ready. */}
       </Section>
 
       <footer className="border-t border-line px-5 py-10 text-center text-sm text-parchment-muted sm:px-8">

@@ -17,7 +17,7 @@ export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
       <p className="mt-5 max-w-xl text-base leading-relaxed text-parchment-muted sm:text-lg">
         {description}
       </p>
-      {/* TODO: Plug in Scryfall / price / affiliate APIs when ready — no fake data here. */}
+      {/* TODO: Plug in Scryfall / price APIs when ready — no fake data here. */}
       <Link
         href="/"
         className="mt-10 inline-flex w-fit text-sm text-accent-bright underline-offset-4 hover:underline"

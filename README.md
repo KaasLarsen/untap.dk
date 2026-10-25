@@ -22,7 +22,7 @@ npm run dev
 | `/` | Branded landing |
 | `/artikler` | Artikelliste fra `content/` |
 | `/artikler/[slug]` | Artikel |
-| `/daek` | Placeholder (kommer snart) |
+| `/deck` | Placeholder (kommer snart) |
 | `/marked` | Placeholder (kommer snart) |
 
 ## Deploy

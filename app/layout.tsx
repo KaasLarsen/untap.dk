@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · untap.dk",
   },
   description:
-    "Den danske hub for Magic: The Gathering — dæklister, strategi og marked.",
+    "Den danske hub for Magic: The Gathering — decks, strategi og marked.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

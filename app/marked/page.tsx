@@ -10,7 +10,7 @@ export default function MarkedPage() {
   return (
     <PlaceholderPage
       title="Marked"
-      description="Prisfeeds og købsvejledning kommer her. Affiliate-links til Kelz0r tilsluttes, når tracking er på plads — stadig ingen falske tal."
+      description="Prisfeeds og købsvejledning kommer her, når data er på plads — stadig ingen falske tal."
     />
   );
 }

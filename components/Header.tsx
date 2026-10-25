@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const nav = [
   { href: "/artikler", label: "Artikler" },
-  { href: "/daek", label: "Dæk" },
+  { href: "/deck", label: "Deck" },
   { href: "/marked", label: "Marked" },
 ] as const;
 
