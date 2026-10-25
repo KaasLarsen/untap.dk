@@ -23,9 +23,7 @@ export function TournamentDeckGrid({ decks }: TournamentDeckGridProps) {
   if (decks.length === 0) {
     return (
       <p className="mt-8 text-base text-parchment-muted">
-        Ingen turneringsdæk lige nu. Tilføj{" "}
-        <code className="text-parchment">SPICERACK_API_KEY</code> for at hente
-        de seneste Modern-lister.
+        Ingen turneringsdæk lige nu — kig tilbage snart.
       </p>
     );
   }

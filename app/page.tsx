@@ -38,8 +38,7 @@ export default async function Home() {
         contentClassName="max-w-6xl"
       >
         <p>
-          Seneste Modern-turneringsdæk fra Spicerack — klik ind for at se listen
-          med Scryfall-tooltips.
+          Seneste Modern-dæk — klik ind for at se listen med Scryfall-tooltips.
         </p>
         <Suspense fallback={<TournamentDeckGridFallback />}>
           <LatestTournamentDecks />

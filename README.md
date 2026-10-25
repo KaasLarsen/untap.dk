@@ -22,9 +22,19 @@ npm run dev
 
 | Variabel | Formål |
 |----------|--------|
-| `SPICERACK_API_KEY` | Henter seneste turneringsdæk til forsiden og `/deck` |
+| `SPICERACK_API_KEY` | Henter live turneringsdæk fra Spicerack til forsiden og `/deck` |
 
-Uden nøglen viser siden en tom state i stedet for at crashe.
+Uden nøglen viser siden curated sample-dæk (stadig med Scryfall-tooltips).
+
+### Sådan får du Spicerack-nøglen
+
+1. Opret / log ind på en organisation på [spicerack.gg](https://spicerack.gg) (store/admin)
+2. Gå til organisationens **Admin → API Keys**
+3. **Create API Key** → navn + access level → kopier `sk_…`-nøglen (vises kun én gang)
+4. Sæt den i Vercel: Project → Settings → Environment Variables → `SPICERACK_API_KEY` (Production)
+5. Redeploy
+
+Docs: [Spicerack API introduction](https://docs.spicerack.gg/api-reference/introduction) · [Public decklist export](https://docs.spicerack.gg/api-reference/public-decklist-database)
 
 ## Ruter
 
