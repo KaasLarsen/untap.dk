@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { MarkedCardGrid } from "@/components/MarkedCardGrid";
-import { MarkedPriceLookup } from "@/components/MarkedPriceLookup";
 import { MarkedSearchForm } from "@/components/MarkedSearchForm";
 import { MarkedSetList } from "@/components/MarkedSetList";
-import { isPokewalletConfigured } from "@/lib/pokewallet";
+import { UntapMark } from "@/components/UntapMark";
 import { searchCards, searchSets } from "@/lib/scryfall";
 
 export const metadata: Metadata = {
   title: "Marked",
   description:
-    "Søg Magic-kort og serier med Scryfall EUR-priser, og se CardMarket-pristrends via PokéWallet.",
+    "Søg Magic-kort og serier. Se aktuelle papirpriser i euro på untap.dk Marked.",
 };
 
+const POPULAR_CARDS = [
+  "Ragavan, Nimble Pilferer",
+  "Force of Will",
+  "The One Ring",
+  "Sol Ring",
+] as const;
+
 type MarkedPageProps = {
-  searchParams: Promise<{ q?: string; tab?: string; trend?: string }>;
+  searchParams: Promise<{ q?: string; tab?: string }>;
 };
 
 function parseTab(tab: string | undefined): "kort" | "serier" {
@@ -34,35 +41,22 @@ export default function MarkedPage({ searchParams }: MarkedPageProps) {
       />
 
       <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-28 sm:px-8 sm:pb-28 sm:pt-32">
-        <p className="animate-fade-rise text-xs font-medium uppercase tracking-[0.2em] text-accent">
-          Marked
-        </p>
-        <h1 className="animate-fade-rise delay-1 mt-4 font-display text-4xl tracking-tight text-parchment sm:text-5xl">
-          untap.dk Marked
+        <div className="animate-fade-rise flex items-center gap-3">
+          <UntapMark className="size-8 shrink-0 text-accent sm:size-10" />
+          <p className="font-display text-3xl font-semibold tracking-tight text-parchment sm:text-4xl">
+            untap.dk
+          </p>
+        </div>
+        <h1 className="animate-fade-rise delay-1 mt-5 font-display text-3xl font-medium tracking-tight text-accent sm:text-4xl md:text-5xl">
+          Find priser
         </h1>
         <p className="animate-fade-rise delay-2 mt-5 max-w-2xl text-base leading-relaxed text-parchment-muted sm:text-lg">
-          Find aktuelle papirpriser via Scryfall, søg på kort eller serier, og se
-          CardMarket EUR-trends via PokéWallet.
+          Søg Magic-kort og serier. Se aktuelle papirpriser i euro.
         </p>
 
         <Suspense fallback={<MarkedSearchFallback />}>
           <MarkedSearchAndResults searchParams={searchParams} />
         </Suspense>
-
-        <section className="animate-fade-rise delay-3 mt-16 border-t border-line pt-12">
-          <h2 className="font-display text-2xl tracking-tight text-parchment sm:text-3xl">
-            CardMarket-pristrends
-          </h2>
-          <p className="mt-3 max-w-xl text-base leading-relaxed text-parchment-muted">
-            Søg et Magic-kort og se EUR-bevægelsen (30 / 7 / 1 dag + trend) fra
-            PokéWallet.
-          </p>
-          <div className="mt-8 max-w-3xl">
-            <Suspense fallback={<MarkedLookupFallback />}>
-              <MarkedTrendLookup searchParams={searchParams} />
-            </Suspense>
-          </div>
-        </section>
       </div>
     </main>
   );
@@ -89,22 +83,6 @@ async function MarkedSearchAndResults({
   );
 }
 
-async function MarkedTrendLookup({
-  searchParams,
-}: {
-  searchParams: Promise<{ trend?: string; q?: string }>;
-}) {
-  const params = await searchParams;
-  const initialQuery = (params.trend ?? "").trim();
-
-  return (
-    <MarkedPriceLookup
-      initialQuery={initialQuery}
-      initiallyConfigured={isPokewalletConfigured()}
-    />
-  );
-}
-
 async function MarkedResults({
   q,
   tab,
@@ -114,11 +92,27 @@ async function MarkedResults({
 }) {
   if (!q) {
     return (
-      <p className="mt-10 text-base text-parchment-muted">
-        {tab === "serier"
-          ? "Skriv et serienavn eller en set-kode for at starte."
-          : "Skriv et kortnavn (mindst 2 tegn) for at se priser."}
-      </p>
+      <div className="mt-10 space-y-6">
+        <p className="text-base text-parchment-muted">
+          {tab === "serier"
+            ? "Skriv et serienavn eller en kode for at starte."
+            : "Skriv et kortnavn for at se priser — eller prøv et af de populære:"}
+        </p>
+        {tab === "kort" ? (
+          <ul className="flex flex-wrap gap-2">
+            {POPULAR_CARDS.map((name) => (
+              <li key={name}>
+                <Link
+                  href={`/marked?tab=kort&q=${encodeURIComponent(name)}`}
+                  className="inline-block border border-line bg-ink-elevated px-3 py-1.5 text-sm text-parchment-muted transition-colors hover:border-accent/40 hover:text-parchment"
+                >
+                  {name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
     );
   }
 
@@ -148,12 +142,6 @@ function MarkedSearchFallback() {
       <div className="h-12 w-full animate-pulse bg-ink-elevated" />
       <div className="h-4 w-2/3 animate-pulse bg-ink-elevated" />
     </div>
-  );
-}
-
-function MarkedLookupFallback() {
-  return (
-    <div className="h-40 animate-pulse border border-line bg-ink-elevated/40" />
   );
 }
 

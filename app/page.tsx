@@ -68,7 +68,7 @@ export default function Home() {
               Marked
             </h3>
             <p className="mt-2 text-base text-parchment-muted">
-              Scryfall EUR-priser og CardMarket-pristrends — søg kort og serier.
+              Søg kort og serier. Se aktuelle papirpriser i euro.
             </p>
             <Link
               href="/marked"

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { PriceHistoryNote } from "@/components/PriceHistoryNote";
+import { MarkedPriceLookup } from "@/components/MarkedPriceLookup";
 import {
   formatEurPriceOrDash,
   rarityLabelDa,
@@ -26,7 +26,7 @@ export async function generateMetadata({
 
   return {
     title: card.name,
-    description: `${card.name} — ${card.set_name}. Aktuel Scryfall EUR-pris på untap.dk Marked.`,
+    description: `${card.name} — ${card.set_name}. Aktuel papirpris i euro på untap.dk Marked.`,
   };
 }
 
@@ -84,13 +84,10 @@ async function MarkedCardDetail({ params }: CardPageProps) {
 
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-parchment-muted">
-            Aktuel pris
+            Papirpris (EUR)
           </p>
           <p className="mt-2 font-display text-4xl tracking-tight text-parchment sm:text-5xl">
             {formatEurPriceOrDash(card)}
-          </p>
-          <p className="mt-2 text-sm text-parchment-muted">
-            Scryfall EUR mid · papir
           </p>
 
           {card.type_line ? (
@@ -111,7 +108,7 @@ async function MarkedCardDetail({ params }: CardPageProps) {
             </Link>
           </p>
 
-          <PriceHistoryNote />
+          <MarkedPriceLookup lockedQuery={card.name} />
         </div>
       </div>
 

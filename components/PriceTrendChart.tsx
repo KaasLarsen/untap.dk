@@ -17,6 +17,11 @@ type PriceTrendChartProps = {
   emptyMessage?: string;
 };
 
+const ACCENT = "#0d9488";
+const ACCENT_MUTED = "#0f766e";
+const TICK = "#5b6b7c";
+const GRID = "rgba(11, 18, 32, 0.1)";
+
 const eurFormatter = new Intl.NumberFormat("da-DK", {
   style: "currency",
   currency: "EUR",
@@ -58,7 +63,7 @@ function PriceTooltip({
     : dateFormatter.format(d);
 
   return (
-    <div className="rounded-md border border-line bg-ink px-3 py-2 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.9)]">
+    <div className="border border-line bg-ink-elevated px-3 py-2 shadow-sm">
       <p className="text-[11px] uppercase tracking-[0.14em] text-parchment-muted">
         {dateLabel}
       </p>
@@ -71,12 +76,12 @@ function PriceTooltip({
 
 export function PriceTrendChart({
   data,
-  title = "Prishistorik (CardMarket EUR)",
+  title = "Prisudvikling",
   emptyMessage = "Ingen prisdata tilgængelig for dette kort.",
 }: PriceTrendChartProps) {
   if (!data.length) {
     return (
-      <div className="w-full rounded-2xl border border-line bg-ink-elevated p-6 text-parchment">
+      <div className="w-full border border-line bg-ink-elevated p-6 text-parchment">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
           untap.dk
         </p>
@@ -87,7 +92,7 @@ export function PriceTrendChart({
   }
 
   return (
-    <div className="w-full rounded-2xl border border-line bg-ink-elevated p-4 text-parchment sm:p-6">
+    <div className="w-full border border-line bg-ink-elevated p-4 text-parchment sm:p-6">
       <header className="mb-4 space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
           untap.dk
@@ -96,7 +101,7 @@ export function PriceTrendChart({
           {title}
         </h3>
         <p className="text-xs text-parchment-muted">
-          Baseret på CardMarket-gennemsnit (30 / 7 / 1 dag + trend)
+          Markedsgennemsnit de seneste 30 dage
         </p>
       </header>
 
@@ -108,20 +113,20 @@ export function PriceTrendChart({
           >
             <defs>
               <linearGradient id="priceTrendFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#e0b04a" stopOpacity={0.45} />
-                <stop offset="100%" stopColor="#e0b04a" stopOpacity={0.02} />
+                <stop offset="0%" stopColor={ACCENT} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={ACCENT} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <CartesianGrid
-              stroke="rgba(214, 206, 192, 0.12)"
+              stroke={GRID}
               strokeDasharray="3 6"
               vertical={false}
             />
             <XAxis
               dataKey="date"
               tickFormatter={formatAxisDate}
-              tick={{ fill: "#9a9286", fontSize: 11 }}
-              axisLine={{ stroke: "rgba(214, 206, 192, 0.12)" }}
+              tick={{ fill: TICK, fontSize: 11 }}
+              axisLine={{ stroke: GRID }}
               tickLine={false}
               minTickGap={28}
             />
@@ -133,7 +138,7 @@ export function PriceTrendChart({
                   maximumFractionDigits: 0,
                 }).format(value)
               }
-              tick={{ fill: "#9a9286", fontSize: 11 }}
+              tick={{ fill: TICK, fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               width={56}
@@ -142,26 +147,26 @@ export function PriceTrendChart({
             <Tooltip
               content={<PriceTooltip />}
               cursor={{
-                stroke: "rgba(201, 149, 42, 0.45)",
+                stroke: "rgba(15, 118, 110, 0.45)",
                 strokeWidth: 1,
               }}
             />
             <Area
               type="monotone"
               dataKey="price"
-              stroke="#e0b04a"
+              stroke={ACCENT_MUTED}
               strokeWidth={2.25}
               fill="url(#priceTrendFill)"
               dot={{
                 r: data.length <= 4 ? 3.5 : 0,
-                fill: "#e0b04a",
-                stroke: "#10131a",
+                fill: ACCENT,
+                stroke: "#ffffff",
                 strokeWidth: 1.5,
               }}
               activeDot={{
                 r: 5,
-                fill: "#e0b04a",
-                stroke: "#07080b",
+                fill: ACCENT,
+                stroke: "#ffffff",
                 strokeWidth: 2,
               }}
               isAnimationActive

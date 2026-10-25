@@ -35,10 +35,10 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
           placeholder={
             tab === "serier"
               ? "Fx Modern Horizons, mh3…"
-              : "Fx Force of Negation, set:mh3…"
+              : "Fx Force of Negation…"
           }
           autoComplete="off"
-          className="min-h-12 flex-1 border border-line bg-ink-elevated/80 px-4 text-base text-parchment outline-none transition-[border-color,box-shadow] placeholder:text-parchment-muted/70 focus:border-accent/50 focus:shadow-[0_0_0_1px_rgba(201,149,42,0.25)]"
+          className="min-h-12 flex-1 border border-line bg-ink-elevated/80 px-4 text-base text-parchment outline-none transition-[border-color,box-shadow] placeholder:text-parchment-muted/70 focus:border-accent/50 focus:shadow-[0_0_0_1px_rgba(15,118,110,0.35)]"
         />
         <button
           type="submit"
@@ -50,8 +50,8 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
 
       <p className="text-sm text-parchment-muted">
         {tab === "serier"
-          ? "Søg på serienavn eller set-kode. Priser er Scryfall EUR mid — aktuelle papirpriser."
-          : "Søg på kortnavn, eller brug Scryfall-syntax som set:mh3. Priser er Scryfall EUR mid."}
+          ? "Søg efter serienavn eller kode."
+          : "Søg efter kortnavn."}
       </p>
     </form>
   );
