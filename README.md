@@ -7,7 +7,7 @@ Dansk Magic: The Gathering-hub — **Untap, Upkeep, Draw.**
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Markdown under `content/` (ingen CMS endnu)
 - Scryfall til kortdata
-- MTGTop8 til seneste turneringsdecklists (ingen API-nøgle)
+- MTGTop8 til seneste tournament decklists (ingen API-nøgle)
 - Dark mode som default (`lang="da"`)
 
 ## Udvikling

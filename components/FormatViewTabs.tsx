@@ -15,7 +15,7 @@ export function FormatViewTabs({ formatSlug, active }: FormatViewTabsProps) {
         Metagame
       </TabLink>
       <TabLink href={`${base}?view=events`} active={active === "events"}>
-        Turnerings
+        Turneringer
       </TabLink>
     </div>
   );

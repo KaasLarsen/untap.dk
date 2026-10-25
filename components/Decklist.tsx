@@ -1,3 +1,4 @@
+import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
 import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
 import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
@@ -129,16 +130,36 @@ export async function Decklist({
   const cards = await resolveCards(entries.map((entry) => entry.name));
   const main = entries.filter((entry) => entry.section === "main");
   const sideboard = entries.filter((entry) => entry.section === "sideboard");
+  const price = estimateDeckPriceEur(entries, cards);
 
   return (
     <article className="w-full max-w-md rounded-2xl border border-line bg-ink-elevated p-6 text-parchment shadow-[0_24px_80px_-40px_rgba(0,0,0,0.9)]">
-      <header className="mb-6 space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-          untap.dk
-        </p>
-        <h2 className="font-display text-2xl tracking-tight text-parchment">
-          {title}
-        </h2>
+      <header className="mb-6 space-y-3">
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+            untap.dk
+          </p>
+          <h2 className="font-display text-2xl tracking-tight text-parchment">
+            {title}
+          </h2>
+        </div>
+
+        {price.pricedCards > 0 ? (
+          <div className="border border-line bg-ink/50 px-3 py-2.5">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-parchment-muted">
+              Ca. pris at samle
+            </p>
+            <p className="mt-1 font-display text-2xl text-accent-bright">
+              {formatEurEstimate(price.total)}
+            </p>
+            <p className="mt-1 text-xs text-parchment-muted">
+              Scryfall EUR
+              {price.missingCards > 0
+                ? ` · ${price.missingCards} kort uden pris`
+                : ""}
+            </p>
+          </div>
+        ) : null}
       </header>
 
       <div className="space-y-8">
