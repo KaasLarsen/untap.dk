@@ -32,7 +32,7 @@ export function Hero() {
             Se artikler
           </Link>
           <Link
-            href="#decklists"
+            href="/deck/f/modern"
             className="inline-flex items-center border border-line px-5 py-3 text-sm text-parchment-muted transition-colors hover:border-parchment-muted hover:text-parchment"
           >
             Se decklists

@@ -7,13 +7,19 @@ import { getTournamentDeckById } from "@/lib/tournaments";
 
 type DeckDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ format?: string }>;
 };
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: DeckDetailPageProps): Promise<Metadata> {
   const { id } = await params;
-  const deck = await getTournamentDeckById(decodeURIComponent(id));
+  const { format } = await searchParams;
+  const deck = await getTournamentDeckById(
+    decodeURIComponent(id),
+    format || "MO",
+  );
 
   if (!deck) {
     return { title: "Deck ikke fundet" };
@@ -38,9 +44,13 @@ function DeckDetailFallback() {
   );
 }
 
-async function DeckDetail({ params }: DeckDetailPageProps) {
+async function DeckDetail({ params, searchParams }: DeckDetailPageProps) {
   const { id } = await params;
-  const deck = await getTournamentDeckById(decodeURIComponent(id));
+  const { format } = await searchParams;
+  const deck = await getTournamentDeckById(
+    decodeURIComponent(id),
+    format || "MO",
+  );
 
   if (!deck) {
     notFound();
@@ -60,9 +70,12 @@ async function DeckDetail({ params }: DeckDetailPageProps) {
           {deck.rank ? ` · #${deck.rank}` : ""}
           {deck.tournament_name ? ` · ${deck.tournament_name}` : ""}
         </p>
+        <p className="text-sm text-parchment-muted">
+          Tryk på et kortnavn for at se billedet.
+        </p>
         <p>
           <Link
-            href="/#decklists"
+            href="/deck"
             className="text-sm text-accent-bright underline-offset-4 hover:underline"
           >
             ← Tilbage til decklists
@@ -84,10 +97,10 @@ async function DeckDetail({ params }: DeckDetailPageProps) {
   );
 }
 
-export default function DeckDetailPage({ params }: DeckDetailPageProps) {
+export default function DeckDetailPage(props: DeckDetailPageProps) {
   return (
     <Suspense fallback={<DeckDetailFallback />}>
-      <DeckDetail params={params} />
+      <DeckDetail {...props} />
     </Suspense>
   );
 }

@@ -21,11 +21,14 @@ npm run dev
 
 | Rute | Indhold |
 |------|---------|
-| `/` | Branded landing + seneste Modern-turneringsdæk |
+| `/` | Branded landing + seneste Modern-dæk |
 | `/artikler` | Artikelliste fra `content/` |
 | `/artikler/[slug]` | Artikel |
-| `/deck` | Turneringsdæk + Scryfall-demo |
-| `/deck/[id]` | Detaljevisning af et turneringsdæk |
+| `/deck` | Redirect til Modern format-hub |
+| `/deck/f/[format]` | Format-menu, metagame-% og turneringer |
+| `/deck/f/[format]/archetype/[id]` | Alle dæk af en type |
+| `/deck/f/[format]/event/[eventId]` | Top-dæk fra et event |
+| `/deck/[id]` | Detaljevisning (klik kort → billede) |
 | `/marked` | Placeholder (kommer snart) |
 
 ## Deploy

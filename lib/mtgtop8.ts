@@ -1,4 +1,5 @@
 import { parseDecklistText } from "@/lib/decklist-text";
+import type { FormatCode } from "@/lib/formats";
 import type { TournamentDeck } from "@/lib/tournaments";
 
 const BASE_URL = "https://www.mtgtop8.com";
@@ -7,7 +8,31 @@ const USER_AGENT = "untap.dk/0.1 (https://untap.dk; contact@untap.dk)";
 const DECK_ROW_RE =
   /class=(?:chosen_tr|hover_tr)[\s\S]*?class=S14>([^<]+)<\/div>[\s\S]*?<a href=\?e=(\d+)&d=(\d+)[^>]*>([^<]+)<\/a>[\s\S]*?class=player[^>]*>([^<]+)<\/a>/g;
 
-type EventDeckRef = {
+const ARCHETYPE_RE =
+  /href=(archetype\?a=(\d+)&meta=(\d+)&f=([A-Za-z0-9]+))[^>]*>([^<]+)<\/a>[\s\S]{0,400}?class=S14>([\d.]+)\s*%/gi;
+
+const EVENT_RE =
+  /<a href=event\?e=(\d+)&f=([A-Za-z0-9]+)>([^<]+)<\/a>(?:\s*@\s*<a[^>]*>([^<]+)<\/a>)?/g;
+
+const ARCHETYPE_DECK_RE =
+  /event\?e=(\d+)&d=(\d+)[^>]*>([^<]+)<\/a>[\s\S]{0,220}?player[^>]*>([^<]+)/gi;
+
+export type MetagameArchetype = {
+  id: string;
+  meta: string;
+  name: string;
+  share: number;
+  format: FormatCode;
+};
+
+export type FormatEvent = {
+  id: string;
+  name: string;
+  location: string;
+  format: FormatCode;
+};
+
+export type DeckRef = {
   eventId: string;
   deckId: string;
   rank: string;
@@ -15,6 +40,7 @@ type EventDeckRef = {
   playerName: string;
   tournamentName: string;
   date: string;
+  format: FormatCode;
 };
 
 async function fetchText(url: string): Promise<string> {
@@ -32,9 +58,20 @@ async function fetchText(url: string): Promise<string> {
   return response.text();
 }
 
-function parseEventIds(formatHtml: string): string[] {
-  const ids = [...formatHtml.matchAll(/event\?e=(\d+)/g)].map((match) => match[1]);
-  return [...new Set(ids)];
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#039;/g, "'");
+}
+
+function dmyToIso(dmy: string): string {
+  const [dd, mm, yy] = dmy.split("/");
+  const year = Number(yy) < 70 ? `20${yy}` : `19${yy}`;
+  return `${year}-${mm}-${dd}`;
 }
 
 function parseEventMeta(eventHtml: string): {
@@ -50,31 +87,16 @@ function parseEventMeta(eventHtml: string): {
   );
   const date = dateMatch ? dmyToIso(dateMatch[2]) : "";
 
-  return { tournamentName, date };
+  return { tournamentName: decodeHtml(tournamentName), date };
 }
 
-function dmyToIso(dmy: string): string {
-  const [dd, mm, yy] = dmy.split("/");
-  const year = Number(yy) < 70 ? `20${yy}` : `19${yy}`;
-  return `${year}-${mm}-${dd}`;
-}
-
-function decodeHtml(value: string): string {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
-}
-
-function parseEventDecks(
+function parseEventDeckRows(
   eventHtml: string,
-  eventId: string,
+  format: FormatCode,
   tournamentName: string,
   date: string,
-): EventDeckRef[] {
-  const decks: EventDeckRef[] = [];
+): DeckRef[] {
+  const decks: DeckRef[] = [];
   DECK_ROW_RE.lastIndex = 0;
 
   let match: RegExpExecArray | null;
@@ -87,25 +109,8 @@ function parseEventDecks(
       playerName: decodeHtml(match[5].trim()),
       tournamentName,
       date,
+      format,
     });
-  }
-
-  if (decks.length === 0) {
-    const fallback = eventHtml.match(
-      /#(\d+(?:-\d+)?)\s+([^-]+)\s+-\s+<a class=player_big[^>]*>([^<]+)<\/a>/,
-    );
-    const deckId = eventHtml.match(/mtgo\?d=(\d+)/)?.[1];
-    if (fallback && deckId) {
-      decks.push({
-        rank: fallback[1],
-        eventId,
-        deckId,
-        deckName: decodeHtml(fallback[2].trim()),
-        playerName: decodeHtml(fallback[3].trim()),
-        tournamentName,
-        date,
-      });
-    }
   }
 
   return decks;
@@ -115,44 +120,184 @@ async function fetchDecklistText(deckId: string): Promise<string> {
   return fetchText(`${BASE_URL}/mtgo?d=${encodeURIComponent(deckId)}`);
 }
 
+export function deckHrefId(eventId: string, deckId: string): string {
+  return `mtgtop8-${eventId}-${deckId}`;
+}
+
+export function parseDeckHrefId(
+  id: string,
+): { eventId: string; deckId: string } | null {
+  const match = id.match(/^mtgtop8-(\d+)-(\d+)$/);
+  if (!match) return null;
+  return { eventId: match[1], deckId: match[2] };
+}
+
+export async function hydrateDeckRef(ref: DeckRef): Promise<TournamentDeck | null> {
+  const raw = await fetchDecklistText(ref.deckId);
+  const cards = parseDecklistText(raw);
+  if (cards.length === 0) return null;
+
+  return {
+    id: deckHrefId(ref.eventId, ref.deckId),
+    player_name: ref.playerName,
+    rank: ref.rank,
+    deck_name: ref.deckName,
+    format: ref.format,
+    cards,
+    tournament_name: ref.tournamentName,
+    date: ref.date,
+  };
+}
+
+export async function fetchFormatMetagame(
+  format: FormatCode,
+): Promise<MetagameArchetype[]> {
+  const html = await fetchText(`${BASE_URL}/format?f=${format}`);
+  const archetypes: MetagameArchetype[] = [];
+  ARCHETYPE_RE.lastIndex = 0;
+
+  let match: RegExpExecArray | null;
+  while ((match = ARCHETYPE_RE.exec(html)) !== null) {
+    archetypes.push({
+      id: match[2],
+      meta: match[3],
+      name: decodeHtml(match[5].trim()),
+      share: Number.parseFloat(match[6]),
+      format: match[4] as FormatCode,
+    });
+  }
+
+  return archetypes;
+}
+
+export async function fetchFormatEvents(
+  format: FormatCode,
+): Promise<FormatEvent[]> {
+  const html = await fetchText(`${BASE_URL}/format?f=${format}`);
+  const events: FormatEvent[] = [];
+  const seen = new Set<string>();
+  EVENT_RE.lastIndex = 0;
+
+  let match: RegExpExecArray | null;
+  while ((match = EVENT_RE.exec(html)) !== null) {
+    const id = match[1];
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    events.push({
+      id,
+      name: decodeHtml(match[3].trim()),
+      location: decodeHtml((match[4] || "").trim()),
+      format: (match[2] as FormatCode) || format,
+    });
+  }
+
+  return events;
+}
+
+export async function fetchArchetypeDeckRefs(
+  format: FormatCode,
+  archetypeId: string,
+  meta: string,
+  limit = 24,
+): Promise<DeckRef[]> {
+  const html = await fetchText(
+    `${BASE_URL}/archetype?a=${encodeURIComponent(archetypeId)}&meta=${encodeURIComponent(meta)}&f=${format}`,
+  );
+
+  const decks: DeckRef[] = [];
+  ARCHETYPE_DECK_RE.lastIndex = 0;
+
+  let match: RegExpExecArray | null;
+  while ((match = ARCHETYPE_DECK_RE.exec(html)) !== null) {
+    decks.push({
+      eventId: match[1],
+      deckId: match[2],
+      deckName: decodeHtml(match[3].trim()),
+      playerName: decodeHtml(match[4].trim()),
+      rank: String(decks.length + 1),
+      tournamentName: "MTGTop8",
+      date: "",
+      format,
+    });
+    if (decks.length >= limit) break;
+  }
+
+  return decks;
+}
+
+export async function fetchEventDeckRefs(
+  format: FormatCode,
+  eventId: string,
+): Promise<{ tournamentName: string; date: string; decks: DeckRef[] }> {
+  const html = await fetchText(
+    `${BASE_URL}/event?e=${encodeURIComponent(eventId)}&f=${format}`,
+  );
+  const { tournamentName, date } = parseEventMeta(html);
+  const decks = parseEventDeckRows(html, format, tournamentName, date);
+  return { tournamentName, date, decks };
+}
+
+export async function fetchDeckByHrefId(
+  id: string,
+  formatHint: FormatCode = "MO",
+): Promise<TournamentDeck | null> {
+  const parsed = parseDeckHrefId(id);
+  if (!parsed) return null;
+
+  try {
+    const { tournamentName, date, decks } = await fetchEventDeckRefs(
+      formatHint,
+      parsed.eventId,
+    );
+    const ref =
+      decks.find((deck) => deck.deckId === parsed.deckId) ??
+      ({
+        eventId: parsed.eventId,
+        deckId: parsed.deckId,
+        rank: "",
+        deckName: "Deck",
+        playerName: "Ukendt Spiller",
+        tournamentName,
+        date,
+        format: formatHint,
+      } satisfies DeckRef);
+
+    return hydrateDeckRef(ref);
+  } catch (error) {
+    console.error(`Kunne ikke hente deck ${id}:`, error);
+    return null;
+  }
+}
+
 /**
- * Henter seneste Modern-dæk fra MTGTop8 (offentlig HTML + MTGO-export).
- * Ingen API-nøgle kræves.
+ * Henter seneste dæk for et format fra MTGTop8 (offentlig HTML + MTGO-export).
  */
-export async function fetchModernDecksFromMtgTop8(
+export async function fetchLatestDecksFromMtgTop8(
+  format: FormatCode = "MO",
   limit = 12,
 ): Promise<TournamentDeck[]> {
-  const formatHtml = await fetchText(`${BASE_URL}/format?f=MO`);
-  const eventIds = parseEventIds(formatHtml).slice(0, 4);
+  const events = await fetchFormatEvents(format);
   const collected: TournamentDeck[] = [];
 
-  for (const eventId of eventIds) {
+  for (const event of events.slice(0, 4)) {
     if (collected.length >= limit) break;
 
-    const eventHtml = await fetchText(
-      `${BASE_URL}/event?e=${encodeURIComponent(eventId)}&f=MO`,
+    const { tournamentName, date, decks } = await fetchEventDeckRefs(
+      format,
+      event.id,
     );
-    const { tournamentName, date } = parseEventMeta(eventHtml);
-    const refs = parseEventDecks(eventHtml, eventId, tournamentName, date);
 
-    for (const ref of refs) {
+    for (const ref of decks) {
       if (collected.length >= limit) break;
-
       try {
-        const raw = await fetchDecklistText(ref.deckId);
-        const cards = parseDecklistText(raw);
-        if (cards.length === 0) continue;
-
-        collected.push({
-          id: `mtgtop8-${ref.eventId}-${ref.deckId}`,
-          player_name: ref.playerName,
-          rank: ref.rank,
-          deck_name: ref.deckName,
-          format: "MODERN",
-          cards,
-          tournament_name: ref.tournamentName,
-          date: ref.date,
+        const deck = await hydrateDeckRef({
+          ...ref,
+          tournamentName,
+          date,
+          format,
         });
+        if (deck) collected.push(deck);
       } catch (error) {
         console.error(`Kunne ikke hente MTGTop8-dæk ${ref.deckId}:`, error);
       }
@@ -160,4 +305,11 @@ export async function fetchModernDecksFromMtgTop8(
   }
 
   return collected;
+}
+
+/** @deprecated Use fetchLatestDecksFromMtgTop8 */
+export async function fetchModernDecksFromMtgTop8(
+  limit = 12,
+): Promise<TournamentDeck[]> {
+  return fetchLatestDecksFromMtgTop8("MO", limit);
 }

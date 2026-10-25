@@ -1,0 +1,110 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { DeckRefList } from "@/components/DeckRefList";
+import { FormatMenu } from "@/components/FormatMenu";
+import { getFormatBySlug } from "@/lib/formats";
+import { getEventDecks } from "@/lib/tournaments";
+
+type PageProps = {
+  params: Promise<{ format: string; eventId: string }>;
+};
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { format: slug, eventId } = await params;
+  const format = getFormatBySlug(slug);
+  if (!format) return { title: "Event" };
+
+  const event = await getEventDecks(format.code, eventId);
+  return {
+    title: event.tournamentName || "Event",
+    description: `Top-dæk fra ${event.tournamentName} (${format.label}).`,
+  };
+}
+
+function PageFallback() {
+  return (
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-5 py-16 sm:px-8 sm:py-24">
+      <div className="h-10 w-72 animate-pulse bg-ink-elevated" />
+      <div className="h-64 animate-pulse border border-line bg-ink-elevated/40" />
+    </main>
+  );
+}
+
+async function EventDeckPanel({
+  formatSlug,
+  formatCode,
+  eventId,
+}: {
+  formatSlug: string;
+  formatCode: string;
+  eventId: string;
+}) {
+  const event = await getEventDecks(formatCode, eventId);
+  return (
+    <DeckRefList
+      decks={event.decks}
+      formatSlug={formatSlug}
+      emptyLabel="Ingen decklists publiceret for dette event endnu."
+    />
+  );
+}
+
+async function EventContent({ params }: PageProps) {
+  const { format: slug, eventId } = await params;
+  const format = getFormatBySlug(slug);
+  if (!format) notFound();
+
+  const event = await getEventDecks(format.code, eventId);
+  if (!event.tournamentName && event.decks.length === 0) notFound();
+
+  return (
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-5 py-16 sm:px-8 sm:py-24">
+      <div className="space-y-5">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">
+          {format.label}
+          {event.date ? ` · ${event.date}` : ""}
+        </p>
+        <h1 className="font-display text-4xl tracking-tight text-parchment sm:text-5xl">
+          {event.tournamentName}
+        </h1>
+        <p className="max-w-2xl text-base text-parchment-muted">
+          Top-dæk fra eventet — vælg et dæk for at se listen.
+        </p>
+        <FormatMenu activeSlug={format.slug} />
+      </div>
+
+      <Suspense
+        fallback={
+          <div className="h-64 animate-pulse border border-line bg-ink-elevated/40" />
+        }
+      >
+        <EventDeckPanel
+          formatSlug={format.slug}
+          formatCode={format.code}
+          eventId={eventId}
+        />
+      </Suspense>
+
+      <p>
+        <Link
+          href={`/deck/f/${format.slug}?view=events`}
+          className="text-sm text-accent-bright underline-offset-4 hover:underline"
+        >
+          ← Tilbage til {format.label} turneringer
+        </Link>
+      </p>
+    </main>
+  );
+}
+
+export default function EventPage(props: PageProps) {
+  return (
+    <Suspense fallback={<PageFallback />}>
+      <EventContent {...props} />
+    </Suspense>
+  );
+}

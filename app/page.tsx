@@ -7,7 +7,7 @@ import { getArticleBySlug } from "@/lib/content";
 import { getLatestTournamentDecks } from "@/lib/tournaments";
 
 async function LatestTournamentDecks() {
-  const decks = await getLatestTournamentDecks("MODERN", 14);
+  const decks = await getLatestTournamentDecks("MO", 14);
   return <TournamentDeckGrid decks={decks.slice(0, 12)} />;
 }
 
@@ -38,17 +38,17 @@ export default async function Home() {
         contentClassName="max-w-6xl"
       >
         <p>
-          Seneste Modern-turneringsdæk fra MTGTop8 — klik ind for Scryfall-tooltips.
+          Seneste Modern-dæk — vælg format, se metagame-% og dyk ned i events.
         </p>
         <Suspense fallback={<TournamentDeckGridFallback />}>
           <LatestTournamentDecks />
         </Suspense>
         <p className="mt-8">
           <Link
-            href="/deck"
+            href="/deck/f/modern"
             className="text-accent-bright underline-offset-4 hover:underline"
           >
-            Se alle decklists
+            Åbn format-browser
           </Link>
         </p>
       </Section>
