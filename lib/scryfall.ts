@@ -194,8 +194,22 @@ export async function getSetByCode(code: string): Promise<ScryfallSet | null> {
   }
 }
 
+function setSearchRank(set: ScryfallSet, q: string): number {
+  const name = set.name.toLowerCase();
+  const code = set.code.toLowerCase();
+
+  if (code === q) return 0;
+  if (name === q) return 1;
+  if (code.startsWith(q)) return 2;
+  if (name.startsWith(q)) return 3;
+  if (code.includes(q)) return 4;
+  if (name.includes(q)) return 5;
+  return 99;
+}
+
 /**
  * Filtrerer Scryfall-serier lokalt på navn eller set-kode.
+ * Exact set-kode (fx mh3) rangeres over delvise hits som smh3.
  */
 export async function searchSets(
   query: string,
@@ -213,7 +227,14 @@ export async function searchSets(
       if (set.digital) return false;
       const name = set.name.toLowerCase();
       const code = set.code.toLowerCase();
-      return name.includes(q) || code.includes(q) || code === q;
+      return name.includes(q) || code.includes(q);
+    })
+    .sort((a, b) => {
+      const rankDiff = setSearchRank(a, q) - setSearchRank(b, q);
+      if (rankDiff !== 0) return rankDiff;
+      const dateA = a.released_at || "";
+      const dateB = b.released_at || "";
+      return dateB.localeCompare(dateA);
     })
     .slice(0, limit);
 }
