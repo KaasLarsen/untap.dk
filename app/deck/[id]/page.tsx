@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Decklist } from "@/components/Decklist";
-import { getTournamentDeckById } from "@/lib/spicerack";
+import { getTournamentDeckById } from "@/lib/tournaments";
 
 type DeckDetailPageProps = {
   params: Promise<{ id: string }>;

@@ -1,5 +1,5 @@
 import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
-import type { TournamentDeckCard } from "@/lib/spicerack";
+import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
 
 export type DecklistEntry = {

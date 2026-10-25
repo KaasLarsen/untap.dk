@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Decklist } from "@/components/Decklist";
 import { TournamentDeckGrid } from "@/components/TournamentDeckGrid";
-import { getLatestTournamentDecks } from "@/lib/spicerack";
+import { getLatestTournamentDecks } from "@/lib/tournaments";
 
 export const metadata: Metadata = {
   title: "Deck",
@@ -60,7 +60,7 @@ export default function DeckPage() {
           Turneringsdæk
         </h1>
         <p className="text-base leading-relaxed text-parchment-muted sm:text-lg">
-          Seneste Modern-lister fra Spicerack. Åbn et dæk for at se kortene med
+          Seneste Modern-lister fra MTGTop8. Åbn et dæk for at se kortene med
           Scryfall-tooltips.
         </p>
       </div>

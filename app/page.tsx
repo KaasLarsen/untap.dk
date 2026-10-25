@@ -4,7 +4,7 @@ import { Hero } from "@/components/Hero";
 import { Section } from "@/components/Section";
 import { TournamentDeckGrid } from "@/components/TournamentDeckGrid";
 import { getArticleBySlug } from "@/lib/content";
-import { getLatestTournamentDecks } from "@/lib/spicerack";
+import { getLatestTournamentDecks } from "@/lib/tournaments";
 
 async function LatestTournamentDecks() {
   const decks = await getLatestTournamentDecks("MODERN", 14);
@@ -38,7 +38,7 @@ export default async function Home() {
         contentClassName="max-w-6xl"
       >
         <p>
-          Seneste Modern-dæk — klik ind for at se listen med Scryfall-tooltips.
+          Seneste Modern-turneringsdæk fra MTGTop8 — klik ind for Scryfall-tooltips.
         </p>
         <Suspense fallback={<TournamentDeckGridFallback />}>
           <LatestTournamentDecks />

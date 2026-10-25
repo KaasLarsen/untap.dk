@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { TournamentDeck } from "@/lib/spicerack";
+import type { TournamentDeck } from "@/lib/tournaments";
 
 type TournamentDeckGridProps = {
   decks: TournamentDeck[];
