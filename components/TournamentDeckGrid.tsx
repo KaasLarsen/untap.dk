@@ -23,7 +23,7 @@ export function TournamentDeckGrid({ decks }: TournamentDeckGridProps) {
   if (decks.length === 0) {
     return (
       <p className="mt-8 text-base text-parchment-muted">
-        Ingen turneringsdæk lige nu — kig tilbage snart.
+        Ingen turneringsdecks lige nu — kig tilbage snart.
       </p>
     );
   }

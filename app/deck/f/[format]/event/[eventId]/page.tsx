@@ -21,7 +21,7 @@ export async function generateMetadata({
   const event = await getEventDecks(format.code, eventId);
   return {
     title: event.tournamentName || "Event",
-    description: `Top-dæk fra ${event.tournamentName} (${format.label}).`,
+    description: `Top-decks fra ${event.tournamentName} (${format.label}).`,
   };
 }
 
@@ -72,7 +72,7 @@ async function EventContent({ params }: PageProps) {
           {event.tournamentName}
         </h1>
         <p className="max-w-2xl text-base text-parchment-muted">
-          Top-dæk fra eventet — vælg et dæk for at se listen.
+          Top-decks fra eventet — vælg et deck for at se listen.
         </p>
         <FormatMenu activeSlug={format.slug} />
       </div>

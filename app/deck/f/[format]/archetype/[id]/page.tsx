@@ -83,7 +83,7 @@ async function ArchetypeContent({ params, searchParams }: PageProps) {
           {archetype.name}
         </h1>
         <p className="max-w-2xl text-base text-parchment-muted">
-          Seneste dæk af typen — klik ind for fuld liste og kortbilleder.
+          Seneste decks af typen — klik ind for fuld liste og kortbilleder.
         </p>
         <FormatMenu activeSlug={format.slug} />
       </div>

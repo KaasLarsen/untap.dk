@@ -7,7 +7,7 @@ Dansk Magic: The Gathering-hub — **Untap, Upkeep, Draw.**
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Markdown under `content/` (ingen CMS endnu)
 - Scryfall til kortdata
-- MTGTop8 til seneste turneringsdæklister (ingen API-nøgle)
+- MTGTop8 til seneste turneringsdecklists (ingen API-nøgle)
 - Dark mode som default (`lang="da"`)
 
 ## Udvikling
@@ -21,13 +21,13 @@ npm run dev
 
 | Rute | Indhold |
 |------|---------|
-| `/` | Branded landing + seneste Modern-dæk |
+| `/` | Branded landing + seneste Modern-decks |
 | `/artikler` | Artikelliste fra `content/` |
 | `/artikler/[slug]` | Artikel |
 | `/deck` | Redirect til Modern format-hub |
 | `/deck/f/[format]` | Format-menu, metagame-% og turneringer |
-| `/deck/f/[format]/archetype/[id]` | Alle dæk af en type |
-| `/deck/f/[format]/event/[eventId]` | Top-dæk fra et event |
+| `/deck/f/[format]/archetype/[id]` | Alle decks af en type |
+| `/deck/f/[format]/event/[eventId]` | Top-decks fra et event |
 | `/deck/[id]` | Detaljevisning (klik kort → billede) |
 | `/marked` | Placeholder (kommer snart) |
 

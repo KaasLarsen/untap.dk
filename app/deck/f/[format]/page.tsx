@@ -86,7 +86,7 @@ async function FormatHub({ params, searchParams }: PageProps) {
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-parchment-muted sm:text-lg">
           Vælg format, se metagame-fordeling i procent, eller gå ind i en
-          turnering og kig top-dækkene.
+          turnering og kig top-decks.
         </p>
         <FormatMenu activeSlug={format.slug} />
       </div>

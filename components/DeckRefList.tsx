@@ -11,7 +11,7 @@ type DeckRefListProps = {
 export function DeckRefList({
   decks,
   formatSlug,
-  emptyLabel = "Ingen dæk fundet.",
+  emptyLabel = "Ingen decks fundet.",
 }: DeckRefListProps) {
   if (decks.length === 0) {
     return <p className="text-parchment-muted">{emptyLabel}</p>;

@@ -38,7 +38,7 @@ export default async function Home() {
         contentClassName="max-w-6xl"
       >
         <p>
-          Seneste Modern-dæk — vælg format, se metagame-% og dyk ned i events.
+          Seneste Modern-decks — vælg format, se metagame-% og dyk ned i events.
         </p>
         <Suspense fallback={<TournamentDeckGridFallback />}>
           <LatestTournamentDecks />
