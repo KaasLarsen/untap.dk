@@ -16,20 +16,20 @@ export function MetagameList({ formatSlug, archetypes }: MetagameListProps) {
   }
 
   return (
-    <ul className="divide-y divide-line border border-line">
+    <ul className="divide-y divide-line border-y border-line">
       {archetypes.map((archetype) => (
         <li key={`${archetype.id}-${archetype.meta}`}>
           <Link
             href={`/deck/f/${formatSlug}/archetype/${archetype.id}?meta=${archetype.meta}`}
-            className="group flex items-center gap-4 px-4 py-3 transition-colors hover:bg-ink-elevated/80"
+            className="group flex items-center gap-4 py-3.5 transition-colors hover:bg-ink-elevated"
           >
             <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-lg text-parchment group-hover:text-accent-bright">
+              <p className="truncate font-display text-lg font-semibold tracking-tight text-parchment group-hover:text-accent">
                 {archetype.name}
               </p>
-              <div className="mt-2 h-1.5 overflow-hidden bg-ink-soft">
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink-soft">
                 <div
-                  className="h-full bg-accent/80 transition-all"
+                  className="h-full rounded-full bg-accent transition-all"
                   style={{
                     width: `${Math.min(100, Math.max(2, archetype.share))}%`,
                   }}

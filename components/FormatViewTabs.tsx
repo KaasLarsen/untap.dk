@@ -10,7 +10,11 @@ export function FormatViewTabs({ formatSlug, active }: FormatViewTabsProps) {
   const base = `/deck/f/${formatSlug}`;
 
   return (
-    <div className="flex gap-6 border-b border-line">
+    <div
+      role="tablist"
+      aria-label="Visning"
+      className="inline-flex rounded-lg border border-line bg-ink-elevated p-1"
+    >
       <TabLink href={base} active={active === "metagame"}>
         Metagame
       </TabLink>
@@ -33,10 +37,12 @@ function TabLink({
   return (
     <Link
       href={href}
+      role="tab"
+      aria-selected={active}
       className={
         active
-          ? "-mb-px border-b-2 border-accent pb-3 text-sm text-accent-bright"
-          : "pb-3 text-sm text-parchment-muted transition-colors hover:text-parchment"
+          ? "rounded-md bg-ink-soft px-4 py-2 text-sm font-semibold text-accent"
+          : "rounded-md px-4 py-2 text-sm text-parchment-muted transition-colors hover:text-parchment"
       }
     >
       {children}

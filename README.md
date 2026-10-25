@@ -8,7 +8,7 @@ Dansk Magic: The Gathering-hub — **Untap, Upkeep, Draw.**
 - Markdown under `content/` (ingen CMS endnu)
 - Scryfall til kortdata
 - MTGTop8 til seneste tournament decklists (ingen API-nøgle)
-- Dark mode som default (`lang="da"`)
+- Light mode som default (`lang="da"`)
 
 ## Udvikling
 

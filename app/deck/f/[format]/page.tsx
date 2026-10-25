@@ -6,6 +6,7 @@ import { EventList } from "@/components/EventList";
 import { FormatMenu } from "@/components/FormatMenu";
 import { FormatViewTabs } from "@/components/FormatViewTabs";
 import { MetagameList } from "@/components/MetagameList";
+import { PageShell } from "@/components/PageShell";
 import { getFormatBySlug } from "@/lib/formats";
 import { getFormatEvents, getFormatMetagame } from "@/lib/tournaments";
 
@@ -28,9 +29,9 @@ export async function generateMetadata({
 
 function ListFallback() {
   return (
-    <div className="space-y-2 border border-line p-4">
+    <div className="space-y-2 border-y border-line py-3">
       {Array.from({ length: 8 }).map((_, index) => (
-        <div key={index} className="h-10 animate-pulse bg-ink-elevated/60" />
+        <div key={index} className="h-10 animate-pulse bg-ink-soft/80" />
       ))}
     </div>
   );
@@ -38,10 +39,10 @@ function ListFallback() {
 
 function PageFallback() {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-5 py-16 sm:px-8 sm:py-24">
-      <div className="h-10 w-48 animate-pulse bg-ink-elevated" />
+    <PageShell>
+      <div className="h-10 w-48 animate-pulse bg-ink-soft" />
       <ListFallback />
-    </main>
+    </PageShell>
   );
 }
 
@@ -76,20 +77,20 @@ async function FormatHub({ params, searchParams }: PageProps) {
   const active = view === "events" ? "events" : "metagame";
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-5 py-16 sm:px-8 sm:py-24">
-      <div className="space-y-5">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">
+    <PageShell>
+      <div className="space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
           Format
         </p>
-        <h1 className="font-display text-4xl tracking-tight text-parchment sm:text-5xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight text-parchment sm:text-5xl">
           {format.label}
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-parchment-muted sm:text-lg">
-          Vælg format, se metagame-fordeling i procent, eller gå ind i en
-          turnering og kig top-decks.
+          Metagame-fordeling eller turneringer — vælg et deck og dyk ned.
         </p>
-        <FormatMenu activeSlug={format.slug} />
       </div>
+
+      <FormatMenu activeSlug={format.slug} />
 
       <FormatViewTabs formatSlug={format.slug} active={active} />
 
@@ -104,12 +105,12 @@ async function FormatHub({ params, searchParams }: PageProps) {
       <p>
         <Link
           href="/"
-          className="text-sm text-accent-bright underline-offset-4 hover:underline"
+          className="text-sm font-medium text-accent underline-offset-4 hover:underline"
         >
           ← Tilbage til forsiden
         </Link>
       </p>
-    </main>
+    </PageShell>
   );
 }
 

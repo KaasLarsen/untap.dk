@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { Hero } from "@/components/Hero";
 import { Section } from "@/components/Section";
 import { TournamentDeckGrid } from "@/components/TournamentDeckGrid";
-import { getArticleBySlug } from "@/lib/content";
 import { getLatestTournamentDecks } from "@/lib/tournaments";
 
 async function LatestTournamentDecks() {
@@ -13,32 +12,78 @@ async function LatestTournamentDecks() {
 
 function TournamentDeckGridFallback() {
   return (
-    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-8 space-y-3 border-y border-line py-3">
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={index}
-          className="h-36 animate-pulse border border-line bg-ink-elevated/40"
+          className="h-10 animate-pulse bg-ink-soft/80"
         />
       ))}
     </div>
   );
 }
 
-export default async function Home() {
-  const welcome = await getArticleBySlug("welcome-post");
-
+export default function Home() {
   return (
     <>
       <Hero />
 
       <Section
+        id="overblik"
+        title="Hvad vil du kigge på?"
+        contentClassName="max-w-6xl"
+      >
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div>
+            <h3 className="font-display text-xl font-semibold text-parchment">
+              Deck
+            </h3>
+            <p className="mt-2 text-base text-parchment-muted">
+              Metagame i procent, turneringer og decklists — start i Modern
+              eller skift format.
+            </p>
+            <Link
+              href="/deck/f/modern"
+              className="mt-4 inline-flex text-sm font-semibold text-accent transition-colors hover:text-accent-bright"
+            >
+              Åbn format-browser →
+            </Link>
+          </div>
+          <div>
+            <h3 className="font-display text-xl font-semibold text-parchment">
+              Artikler
+            </h3>
+            <p className="mt-2 text-base text-parchment-muted">
+              Strategi og guides, der gør dig skarpere ved bordet.
+            </p>
+            <Link
+              href="/artikler"
+              className="mt-4 inline-flex text-sm font-semibold text-accent transition-colors hover:text-accent-bright"
+            >
+              Se artikler →
+            </Link>
+          </div>
+        </div>
+        <p className="mt-8 text-sm text-parchment-muted">
+          Marked med priser kommer snart —{" "}
+          <Link
+            href="/marked"
+            className="font-medium text-accent underline-offset-4 hover:underline"
+          >
+            se status
+          </Link>
+          .
+        </p>
+      </Section>
+
+      <Section
         id="decklists"
-        eyebrow="Søjle 01"
-        title="Decklists"
+        eyebrow="Modern"
+        title="Seneste decks"
         contentClassName="max-w-6xl"
       >
         <p>
-          Seneste Modern-decks — vælg format, se metagame-% og dyk ned i events.
+          Topplaceringer fra seneste turneringer — klik ind for fuld liste.
         </p>
         <Suspense fallback={<TournamentDeckGridFallback />}>
           <LatestTournamentDecks />
@@ -46,56 +91,12 @@ export default async function Home() {
         <p className="mt-8">
           <Link
             href="/deck/f/modern"
-            className="text-accent-bright underline-offset-4 hover:underline"
+            className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
           >
-            Åbn format-browser
+            Se hele metagame →
           </Link>
         </p>
       </Section>
-
-      <Section id="strategi" eyebrow="Søjle 02" title="Strategi">
-        <p>
-          Artikler og guides, der gør dig skarpere ved bordet. Start med vores
-          velkomstindlæg, og følg med når flere tekster lander under Artikler.
-        </p>
-        <p className="mt-4">
-          {welcome ? (
-            <Link
-              href={`/artikler/${welcome.slug}`}
-              className="text-accent-bright underline-offset-4 hover:underline"
-            >
-              Læs: {welcome.title}
-            </Link>
-          ) : (
-            <Link
-              href="/artikler"
-              className="text-accent-bright underline-offset-4 hover:underline"
-            >
-              Se artikler
-            </Link>
-          )}
-        </p>
-      </Section>
-
-      <Section id="marked" eyebrow="Søjle 03" title="Marked">
-        <p>
-          Priser og købsvejledning, så du ved, hvad dine kort er værd — uden
-          støj. Markedsdelen kommer, når prisfeeds er på plads.
-        </p>
-        <p className="mt-4">
-          <Link
-            href="/marked"
-            className="text-accent-bright underline-offset-4 hover:underline"
-          >
-            Marked — kommer snart
-          </Link>
-        </p>
-      </Section>
-
-      <footer className="border-t border-line px-5 py-10 text-center text-sm text-parchment-muted sm:px-8">
-        <p className="font-display text-lg text-parchment">untap.dk</p>
-        <p className="mt-2">Vi bygger i mørket. Untap, Upkeep, Draw.</p>
-      </footer>
     </>
   );
 }
