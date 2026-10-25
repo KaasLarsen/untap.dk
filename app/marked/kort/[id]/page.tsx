@@ -70,6 +70,7 @@ async function MarkedCardDetail({ params }: CardPageProps) {
               src={card.image_uris.normal}
               alt={card.name}
               fill
+              unoptimized
               priority
               sizes="(max-width: 1024px) 100vw, 20rem"
               className="object-cover"
