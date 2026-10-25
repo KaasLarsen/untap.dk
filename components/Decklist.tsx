@@ -2,6 +2,7 @@ import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
 import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
 import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
+import { UntapMark } from "./UntapMark";
 
 export type DecklistEntry = {
   quantity: number;
@@ -136,7 +137,8 @@ export async function Decklist({
     <article className="w-full max-w-md rounded-2xl border border-line bg-ink-elevated p-6 text-parchment shadow-[0_24px_80px_-40px_rgba(0,0,0,0.9)]">
       <header className="mb-6 space-y-3">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+            <UntapMark className="size-3.5" />
             untap.dk
           </p>
           <h2 className="font-display text-2xl tracking-tight text-parchment">

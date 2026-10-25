@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UntapMark } from "@/components/UntapMark";
 
 const nav = [
   { href: "/artikler", label: "Artikler" },
@@ -12,8 +13,9 @@ export function Header() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 sm:h-16 sm:px-8">
         <Link
           href="/"
-          className="font-display text-lg tracking-wide text-parchment transition-colors hover:text-accent-bright sm:text-xl"
+          className="group inline-flex items-center gap-2 font-display text-lg tracking-wide text-parchment transition-colors hover:text-accent-bright sm:gap-2.5 sm:text-xl"
         >
+          <UntapMark className="size-5 text-accent transition-colors group-hover:text-accent-bright sm:size-6" />
           untap.dk
         </Link>
         <nav aria-label="Hovednavigation" className="flex items-center gap-5 sm:gap-8">

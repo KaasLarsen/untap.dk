@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Hero } from "@/components/Hero";
 import { Section } from "@/components/Section";
 import { TournamentDeckGrid } from "@/components/TournamentDeckGrid";
+import { UntapMark } from "@/components/UntapMark";
 import { getArticleBySlug } from "@/lib/content";
 import { getLatestTournamentDecks } from "@/lib/tournaments";
 
@@ -93,7 +94,10 @@ export default async function Home() {
       </Section>
 
       <footer className="border-t border-line px-5 py-10 text-center text-sm text-parchment-muted sm:px-8">
-        <p className="font-display text-lg text-parchment">untap.dk</p>
+        <p className="inline-flex items-center justify-center gap-2 font-display text-lg text-parchment">
+          <UntapMark className="size-4 text-accent" />
+          untap.dk
+        </p>
         <p className="mt-2">Vi bygger i mørket. Untap, Upkeep, Draw.</p>
       </footer>
     </>

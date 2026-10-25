@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UntapMark } from "@/components/UntapMark";
 
 export function Hero() {
   return (
@@ -15,9 +16,12 @@ export function Hero() {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-28 sm:px-8 sm:pb-28 sm:pt-32">
-        <p className="animate-fade-rise font-display text-5xl leading-none tracking-tight text-parchment sm:text-7xl md:text-8xl">
-          untap.dk
-        </p>
+        <div className="animate-fade-rise flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5 md:gap-6">
+          <UntapMark className="size-12 shrink-0 text-accent sm:size-16 md:size-20" />
+          <p className="font-display text-5xl leading-none tracking-tight text-parchment sm:text-7xl md:text-8xl">
+            untap.dk
+          </p>
+        </div>
         <h1 className="animate-fade-rise delay-1 mt-5 font-display text-2xl font-normal tracking-wide text-accent-bright sm:text-3xl md:text-4xl">
           Untap, Upkeep, Draw.
         </h1>
