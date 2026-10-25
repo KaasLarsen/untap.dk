@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #07080b;
-  --ink-elevated: #10131a;
-  --ink-soft: #1a1f2a;
-  --parchment: #d6cec0;
-  --parchment-muted: #9a9286;
-  --accent: #c9952a;
-  --accent-bright: #e0b04a;
-  --accent-dim: #8a6a1e;
-  --line: rgba(214, 206, 192, 0.12);
+  --ink: #f4f7f9;
+  --ink-elevated: #ffffff;
+  --ink-soft: #e8eef2;
+  --parchment: #0b1220;
+  --parchment-muted: #5b6b7c;
+  --accent: #0f766e;
+  --accent-bright: #0d9488;
+  --accent-dim: #115e59;
+  --line: rgba(11, 18, 32, 0.1);
   --background: var(--ink);
   --foreground: var(--parchment);
 }
@@ -31,7 +31,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -41,8 +41,8 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 45%, transparent);
-  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--parchment);
 }
 
 @keyframes fade-rise {
@@ -69,11 +69,11 @@ body {
   0%,
   100% {
     transform: translateX(0) scaleX(1);
-    opacity: 0.55;
+    opacity: 0.45;
   }
   50% {
     transform: translateX(1.5%) scaleX(1.03);
-    opacity: 0.85;
+    opacity: 0.75;
   }
 }
 
@@ -103,16 +103,23 @@ body {
 
 .hero-atmosphere {
   background:
-    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(201, 149, 42, 0.14), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 30%, rgba(26, 31, 42, 0.9), transparent 60%),
-    radial-gradient(ellipse 45% 35% at 10% 70%, rgba(16, 19, 26, 0.95), transparent 55%),
-    linear-gradient(180deg, #0a0c11 0%, var(--ink) 55%, #050608 100%);
+    radial-gradient(ellipse 90% 55% at 70% -5%, rgba(20, 184, 166, 0.18), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 10% 40%, rgba(56, 189, 248, 0.12), transparent 60%),
+    radial-gradient(ellipse 45% 35% at 90% 80%, rgba(15, 118, 110, 0.08), transparent 55%),
+    linear-gradient(180deg, #eef4f7 0%, var(--ink) 45%, #e8eef2 100%);
 }
 
 .hero-texture {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
-  opacity: 0.07;
-  mix-blend-mode: overlay;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+}
+
+.hero-motif {
+  background-image:
+    linear-gradient(135deg, transparent 48%, rgba(15, 118, 110, 0.07) 49%, rgba(15, 118, 110, 0.07) 51%, transparent 52%),
+    linear-gradient(45deg, transparent 48%, rgba(56, 189, 248, 0.05) 49%, rgba(56, 189, 248, 0.05) 51%, transparent 52%);
+  background-size: 48px 48px;
 }
 
 .prose-untap {
@@ -124,9 +131,9 @@ body {
 .prose-untap h2 {
   margin-top: 2rem;
   margin-bottom: 0.75rem;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), ui-sans-serif, sans-serif;
   font-size: 1.5rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--parchment);
 }
 
@@ -140,7 +147,7 @@ body {
 }
 
 .prose-untap a {
-  color: var(--accent-bright);
+  color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }

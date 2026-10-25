@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DeckRefList } from "@/components/DeckRefList";
 import { FormatMenu } from "@/components/FormatMenu";
+import { PageShell } from "@/components/PageShell";
 import { getFormatBySlug } from "@/lib/formats";
 import { getEventDecks } from "@/lib/tournaments";
 
@@ -27,10 +28,10 @@ export async function generateMetadata({
 
 function PageFallback() {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-5 py-16 sm:px-8 sm:py-24">
-      <div className="h-10 w-72 animate-pulse bg-ink-elevated" />
-      <div className="h-64 animate-pulse border border-line bg-ink-elevated/40" />
-    </main>
+    <PageShell>
+      <div className="h-10 w-72 animate-pulse bg-ink-soft" />
+      <div className="h-64 animate-pulse bg-ink-soft/60" />
+    </PageShell>
   );
 }
 
@@ -62,25 +63,24 @@ async function EventContent({ params }: PageProps) {
   if (!event.tournamentName && event.decks.length === 0) notFound();
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-5 py-16 sm:px-8 sm:py-24">
-      <div className="space-y-5">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">
+    <PageShell>
+      <div className="space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
           {format.label}
           {event.date ? ` · ${event.date}` : ""}
         </p>
-        <h1 className="font-display text-4xl tracking-tight text-parchment sm:text-5xl">
+        <h1 className="font-display text-4xl font-semibold tracking-tight text-parchment sm:text-5xl">
           {event.tournamentName}
         </h1>
         <p className="max-w-2xl text-base text-parchment-muted">
           Top-decks fra eventet — vælg et deck for at se listen.
         </p>
-        <FormatMenu activeSlug={format.slug} />
       </div>
 
+      <FormatMenu activeSlug={format.slug} />
+
       <Suspense
-        fallback={
-          <div className="h-64 animate-pulse border border-line bg-ink-elevated/40" />
-        }
+        fallback={<div className="h-64 animate-pulse bg-ink-soft/60" />}
       >
         <EventDeckPanel
           formatSlug={format.slug}
@@ -92,12 +92,12 @@ async function EventContent({ params }: PageProps) {
       <p>
         <Link
           href={`/deck/f/${format.slug}?view=events`}
-          className="text-sm text-accent-bright underline-offset-4 hover:underline"
+          className="text-sm font-medium text-accent underline-offset-4 hover:underline"
         >
           ← Tilbage til {format.label} turneringer
         </Link>
       </p>
-    </main>
+    </PageShell>
   );
 }
 

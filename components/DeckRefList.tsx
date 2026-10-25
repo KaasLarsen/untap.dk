@@ -18,18 +18,18 @@ export function DeckRefList({
   }
 
   return (
-    <ul className="divide-y divide-line border border-line">
+    <ul className="divide-y divide-line border-y border-line">
       {decks.map((deck) => (
         <li key={`${deck.eventId}-${deck.deckId}`}>
           <Link
             href={`/deck/${deckHrefId(deck.eventId, deck.deckId)}?format=${formatSlug}`}
-            className="group flex items-baseline gap-4 px-4 py-3 transition-colors hover:bg-ink-elevated/80"
+            className="group flex items-baseline gap-4 py-3.5 transition-colors hover:bg-ink-elevated"
           >
             <span className="w-10 shrink-0 font-mono text-xs tabular-nums text-accent">
               #{deck.rank || "—"}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-lg text-parchment group-hover:text-accent-bright">
+              <p className="truncate font-display text-lg font-semibold tracking-tight text-parchment group-hover:text-accent">
                 {deck.deckName}
               </p>
               <p className="mt-0.5 truncate text-sm text-parchment-muted">

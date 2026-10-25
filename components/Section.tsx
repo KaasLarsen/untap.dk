@@ -20,15 +20,15 @@ export function Section({
   return (
     <section
       id={id}
-      className={`border-t border-line bg-ink px-5 py-20 sm:px-8 sm:py-28 ${className}`}
+      className={`border-t border-line bg-ink px-5 py-16 sm:px-8 sm:py-20 ${className}`}
     >
       <div className={`mx-auto ${contentClassName}`}>
         {eyebrow ? (
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-accent">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-accent">
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="font-display text-3xl tracking-tight text-parchment sm:text-4xl">
+        <h2 className="font-display text-3xl font-semibold tracking-tight text-parchment sm:text-4xl">
           {title}
         </h2>
         <div className="mt-5 text-base leading-relaxed text-parchment-muted sm:text-lg">

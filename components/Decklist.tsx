@@ -2,7 +2,6 @@ import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
 import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
 import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
-import { UntapMark } from "./UntapMark";
 
 export type DecklistEntry = {
   quantity: number;
@@ -153,7 +152,7 @@ function groupEntriesByType(
   });
 }
 
-function Section({
+function DeckSection({
   label,
   entries,
   cards,
@@ -170,10 +169,10 @@ function Section({
   return (
     <section className="space-y-5">
       <div className="flex items-baseline justify-between border-b border-line pb-2">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-parchment-muted">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-parchment-muted">
           {label}
         </h3>
-        <span className="font-mono text-xs tabular-nums text-parchment-muted/70">
+        <span className="font-mono text-xs tabular-nums text-parchment-muted">
           {total}
         </span>
       </div>
@@ -226,27 +225,26 @@ export async function Decklist({
   const price = estimateDeckPriceEur(entries, cards);
 
   return (
-    <article className="w-full max-w-md rounded-2xl border border-line bg-ink-elevated p-6 text-parchment shadow-[0_24px_80px_-40px_rgba(0,0,0,0.9)]">
-      <header className="mb-6 space-y-3">
-        <div className="space-y-1">
-          <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-            <UntapMark className="size-3.5" />
-            untap.dk
-          </p>
-          <h2 className="font-display text-2xl tracking-tight text-parchment">
+    <article className="w-full text-parchment">
+      <header className="mb-8 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="font-display text-2xl font-semibold tracking-tight text-parchment">
             {title}
           </h2>
+          <p className="mt-1 text-sm text-parchment-muted">
+            Tryk på et kortnavn for at se billedet.
+          </p>
         </div>
 
         {price.pricedCards > 0 ? (
-          <div className="border border-line bg-ink/50 px-3 py-2.5">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-parchment-muted">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-parchment-muted">
               Ca. pris at samle
             </p>
-            <p className="mt-1 font-display text-2xl text-accent-bright">
+            <p className="mt-1 font-display text-2xl font-semibold text-accent">
               {formatEurEstimate(price.total)}
             </p>
-            <p className="mt-1 text-xs text-parchment-muted">
+            <p className="mt-0.5 text-xs text-parchment-muted">
               Scryfall EUR
               {price.missingCards > 0
                 ? ` · ${price.missingCards} kort uden pris`
@@ -256,9 +254,9 @@ export async function Decklist({
         ) : null}
       </header>
 
-      <div className="space-y-8">
-        <Section label="Maindeck" entries={main} cards={cards} />
-        <Section label="Sideboard" entries={sideboard} cards={cards} />
+      <div className="grid gap-10 sm:grid-cols-2">
+        <DeckSection label="Maindeck" entries={main} cards={cards} />
+        <DeckSection label="Sideboard" entries={sideboard} cards={cards} />
       </div>
     </article>
   );

@@ -91,7 +91,7 @@ export function DecklistTooltip({
       <button
         ref={buttonRef}
         type="button"
-        className="group flex w-full items-baseline gap-3 rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-parchment/5 focus-visible:bg-parchment/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="group flex w-full items-baseline gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-ink-soft focus-visible:bg-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-expanded={open}
         aria-controls={open ? tooltipId : undefined}
         onClick={() => {
@@ -99,10 +99,10 @@ export function DecklistTooltip({
           setOpen((value) => !value);
         }}
       >
-        <span className="w-7 shrink-0 font-mono text-sm tabular-nums text-parchment-muted transition-colors group-hover:text-accent-bright">
+        <span className="w-7 shrink-0 font-mono text-sm tabular-nums text-parchment-muted transition-colors group-hover:text-accent">
           {quantity}
         </span>
-        <span className="text-[15px] tracking-tight text-parchment transition-colors group-hover:text-parchment">
+        <span className="text-[15px] tracking-tight text-parchment transition-colors group-hover:text-accent">
           {name}
         </span>
       </button>
@@ -115,7 +115,7 @@ export function DecklistTooltip({
           className="fixed z-50 w-60 animate-fade-in"
           style={{ top: pos.top, left: pos.left }}
         >
-          <div className="overflow-hidden rounded-lg border border-line bg-ink-elevated shadow-2xl shadow-black/60">
+          <div className="overflow-hidden rounded-lg border border-line bg-ink-elevated shadow-xl shadow-parchment/10">
             <Image
               src={imageUrl}
               alt={name}
