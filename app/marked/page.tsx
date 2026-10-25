@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { MarkedCardGrid } from "@/components/MarkedCardGrid";
+import { MarkedPriceLookup } from "@/components/MarkedPriceLookup";
 import { MarkedSearchForm } from "@/components/MarkedSearchForm";
 import { MarkedSetList } from "@/components/MarkedSetList";
+import { isPokewalletConfigured } from "@/lib/pokewallet";
 import { searchCards, searchSets } from "@/lib/scryfall";
 
 export const metadata: Metadata = {
   title: "Marked",
   description:
-    "Søg Magic-kort og serier, og se aktuelle Scryfall EUR-priser på untap.dk.",
+    "Søg Magic-kort og serier med Scryfall EUR-priser, og se CardMarket-pristrends via PokéWallet.",
 };
 
 type MarkedPageProps = {
-  searchParams: Promise<{ q?: string; tab?: string }>;
+  searchParams: Promise<{ q?: string; tab?: string; trend?: string }>;
 };
 
 function parseTab(tab: string | undefined): "kort" | "serier" {
@@ -39,13 +41,28 @@ export default function MarkedPage({ searchParams }: MarkedPageProps) {
           untap.dk Marked
         </h1>
         <p className="animate-fade-rise delay-2 mt-5 max-w-2xl text-base leading-relaxed text-parchment-muted sm:text-lg">
-          Find aktuelle papirpriser via Scryfall, og søg på kort eller serier.
-          Prishistorik kommer, når vi har snapshots — ikke før.
+          Find aktuelle papirpriser via Scryfall, søg på kort eller serier, og se
+          CardMarket EUR-trends via PokéWallet.
         </p>
 
         <Suspense fallback={<MarkedSearchFallback />}>
           <MarkedSearchAndResults searchParams={searchParams} />
         </Suspense>
+
+        <section className="animate-fade-rise delay-3 mt-16 border-t border-line pt-12">
+          <h2 className="font-display text-2xl tracking-tight text-parchment sm:text-3xl">
+            CardMarket-pristrends
+          </h2>
+          <p className="mt-3 max-w-xl text-base leading-relaxed text-parchment-muted">
+            Søg et Magic-kort og se EUR-bevægelsen (30 / 7 / 1 dag + trend) fra
+            PokéWallet.
+          </p>
+          <div className="mt-8 max-w-3xl">
+            <Suspense fallback={<MarkedLookupFallback />}>
+              <MarkedTrendLookup searchParams={searchParams} />
+            </Suspense>
+          </div>
+        </section>
       </div>
     </main>
   );
@@ -69,6 +86,22 @@ async function MarkedSearchAndResults({
         <MarkedResults q={q} tab={tab} />
       </Suspense>
     </>
+  );
+}
+
+async function MarkedTrendLookup({
+  searchParams,
+}: {
+  searchParams: Promise<{ trend?: string; q?: string }>;
+}) {
+  const params = await searchParams;
+  const initialQuery = (params.trend ?? "").trim();
+
+  return (
+    <MarkedPriceLookup
+      initialQuery={initialQuery}
+      initiallyConfigured={isPokewalletConfigured()}
+    />
   );
 }
 
@@ -115,6 +148,12 @@ function MarkedSearchFallback() {
       <div className="h-12 w-full animate-pulse bg-ink-elevated" />
       <div className="h-4 w-2/3 animate-pulse bg-ink-elevated" />
     </div>
+  );
+}
+
+function MarkedLookupFallback() {
+  return (
+    <div className="h-40 animate-pulse border border-line bg-ink-elevated/40" />
   );
 }
 

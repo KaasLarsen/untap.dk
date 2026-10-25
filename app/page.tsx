@@ -80,8 +80,8 @@ export default async function Home() {
 
       <Section id="marked" eyebrow="Søjle 03" title="Marked">
         <p>
-          Søg på kort og serier, og se aktuelle Scryfall EUR-priser. Prishistorik
-          og grafer venter på snapshots — indtil da kun ægte, aktuelle tal.
+          Søg på kort og serier med Scryfall EUR-priser, og se CardMarket
+          pristrends via PokéWallet — kun ægte tal.
         </p>
         <p className="mt-4">
           <Link
