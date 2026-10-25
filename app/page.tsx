@@ -1,7 +1,28 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Hero } from "@/components/Hero";
 import { Section } from "@/components/Section";
+import { TournamentDeckGrid } from "@/components/TournamentDeckGrid";
 import { getArticleBySlug } from "@/lib/content";
+import { getLatestTournamentDecks } from "@/lib/spicerack";
+
+async function LatestTournamentDecks() {
+  const decks = await getLatestTournamentDecks("MODERN", 14);
+  return <TournamentDeckGrid decks={decks.slice(0, 12)} />;
+}
+
+function TournamentDeckGridFallback() {
+  return (
+    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div
+          key={index}
+          className="h-36 animate-pulse border border-line bg-ink-elevated/40"
+        />
+      ))}
+    </div>
+  );
+}
 
 export default async function Home() {
   const welcome = await getArticleBySlug("welcome-post");
@@ -10,15 +31,25 @@ export default async function Home() {
     <>
       <Hero />
 
-      <Section id="decklists" eyebrow="Søjle 01" title="Decklists">
+      <Section
+        id="decklists"
+        eyebrow="Søjle 01"
+        title="Decklists"
+        contentClassName="max-w-6xl"
+      >
         <p>
-          Overblik over, hvad der spilles, og hvad der er værd at prøve — fra
-          Standard til Commander. Listen vokser, når data og Scryfall-integration
-          er klar.
+          Seneste Modern-turneringsdæk fra Spicerack — klik ind for at se listen
+          med Scryfall-tooltips.
         </p>
-        <p className="mt-4">
-          <Link href="/deck" className="text-accent-bright underline-offset-4 hover:underline">
-            Deck — kommer snart
+        <Suspense fallback={<TournamentDeckGridFallback />}>
+          <LatestTournamentDecks />
+        </Suspense>
+        <p className="mt-8">
+          <Link
+            href="/deck"
+            className="text-accent-bright underline-offset-4 hover:underline"
+          >
+            Se alle decklists
           </Link>
         </p>
       </Section>
@@ -37,7 +68,10 @@ export default async function Home() {
               Læs: {welcome.title}
             </Link>
           ) : (
-            <Link href="/artikler" className="text-accent-bright underline-offset-4 hover:underline">
+            <Link
+              href="/artikler"
+              className="text-accent-bright underline-offset-4 hover:underline"
+            >
               Se artikler
             </Link>
           )}
@@ -50,7 +84,10 @@ export default async function Home() {
           støj. Markedsdelen kommer, når prisfeeds er på plads.
         </p>
         <p className="mt-4">
-          <Link href="/marked" className="text-accent-bright underline-offset-4 hover:underline">
+          <Link
+            href="/marked"
+            className="text-accent-bright underline-offset-4 hover:underline"
+          >
             Marked — kommer snart
           </Link>
         </p>

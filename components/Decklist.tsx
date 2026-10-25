@@ -1,4 +1,5 @@
 import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
+import type { TournamentDeckCard } from "@/lib/spicerack";
 import { DecklistTooltip } from "./DecklistTooltip";
 
 export type DecklistEntry = {
@@ -8,7 +9,8 @@ export type DecklistEntry = {
 };
 
 type DecklistProps = {
-  raw: string;
+  raw?: string;
+  entries?: DecklistEntry[] | TournamentDeckCard[];
   title?: string;
 };
 
@@ -44,6 +46,20 @@ function parseDecklist(raw: string): DecklistEntry[] {
   }
 
   return entries;
+}
+
+function normalizeEntries(
+  entries: DecklistEntry[] | TournamentDeckCard[],
+): DecklistEntry[] {
+  return entries.map((entry) => {
+    if ("section" in entry) return entry;
+
+    return {
+      quantity: entry.quantity,
+      name: entry.name,
+      section: entry.is_sideboard ? "sideboard" : "main",
+    };
+  });
 }
 
 async function resolveCards(
@@ -100,10 +116,16 @@ function Section({
   );
 }
 
-export async function Decklist({ raw, title = "Decklist" }: DecklistProps) {
+export async function Decklist({
+  raw,
+  entries: structuredEntries,
+  title = "Decklist",
+}: DecklistProps) {
   "use cache";
 
-  const entries = parseDecklist(raw);
+  const entries = structuredEntries
+    ? normalizeEntries(structuredEntries)
+    : parseDecklist(raw ?? "");
   const cards = await resolveCards(entries.map((entry) => entry.name));
   const main = entries.filter((entry) => entry.section === "main");
   const sideboard = entries.filter((entry) => entry.section === "sideboard");

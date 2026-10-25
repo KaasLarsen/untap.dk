@@ -6,15 +6,23 @@ type SectionProps = {
   title: string;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
 };
 
-export function Section({ id, eyebrow, title, children, className = "" }: SectionProps) {
+export function Section({
+  id,
+  eyebrow,
+  title,
+  children,
+  className = "",
+  contentClassName = "max-w-3xl",
+}: SectionProps) {
   return (
     <section
       id={id}
       className={`border-t border-line bg-ink px-5 py-20 sm:px-8 sm:py-28 ${className}`}
     >
-      <div className="mx-auto max-w-3xl">
+      <div className={`mx-auto ${contentClassName}`}>
         {eyebrow ? (
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-accent">
             {eyebrow}

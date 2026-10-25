@@ -32,10 +32,10 @@ export function Hero() {
             Se artikler
           </Link>
           <Link
-            href="/deck"
+            href="#decklists"
             className="inline-flex items-center border border-line px-5 py-3 text-sm text-parchment-muted transition-colors hover:border-parchment-muted hover:text-parchment"
           >
-            Kommer snart: decklists
+            Se decklists
           </Link>
         </div>
       </div>
