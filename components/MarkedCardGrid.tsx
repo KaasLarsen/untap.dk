@@ -61,9 +61,7 @@ export function MarkedCardGrid({
               </p>
               <p className="text-base text-parchment">
                 {formatEurPriceOrDash(card)}
-                <span className="ml-2 text-xs text-parchment-muted">
-                  Scryfall EUR
-                </span>
+                <span className="ml-2 text-xs text-parchment-muted">EUR</span>
               </p>
             </div>
           </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { PriceTrendChart } from "@/components/PriceTrendChart";
 import type { PricePoint } from "@/lib/pokewallet";
 
@@ -14,52 +14,38 @@ type TrendResponse = {
   message?: string;
 };
 
-const SUGGESTIONS = [
-  "Ragavan, Nimble Pilferer",
-  "Force of Will",
-  "The One Ring",
-  "Sol Ring",
-] as const;
+const UNAVAILABLE =
+  "Prisudvikling er midlertidigt utilgængelig. Prøv igen senere.";
 
 type MarkedPriceLookupProps = {
-  initialQuery?: string;
-  initiallyConfigured: boolean;
+  /** When set, auto-loads trend for this card — no search UI. */
+  lockedQuery: string;
 };
 
-export function MarkedPriceLookup({
-  initialQuery = "",
-  initiallyConfigured,
-}: MarkedPriceLookupProps) {
-  const [query, setQuery] = useState(initialQuery);
+export function MarkedPriceLookup({ lockedQuery }: MarkedPriceLookupProps) {
   const [result, setResult] = useState<TrendResponse | null>(null);
-  const [error, setError] = useState<string | null>(
-    initiallyConfigured
-      ? null
-      : "POKEWALLET_KEY mangler. Tilføj nøglen i .env.local for at hente live priser.",
-  );
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function lookup(nextQuery: string) {
-    const trimmed = nextQuery.trim();
-    if (trimmed.length < 2) {
-      setError("Søg med mindst 2 tegn.");
-      setResult(null);
-      return;
-    }
+  useEffect(() => {
+    const trimmed = lockedQuery.trim();
+    if (trimmed.length < 2) return;
 
-    setQuery(trimmed);
-    setError(null);
+    const controller = new AbortController();
 
     startTransition(async () => {
       try {
         const response = await fetch(
           `/api/price-trend?q=${encodeURIComponent(trimmed)}`,
+          { signal: controller.signal },
         );
         const data = (await response.json()) as TrendResponse;
 
+        if (controller.signal.aborted) return;
+
         if (!response.ok) {
           setResult(null);
-          setError(data.message ?? "Kunne ikke hente prisdata.");
+          setError(data.message ?? UNAVAILABLE);
           return;
         }
 
@@ -67,90 +53,66 @@ export function MarkedPriceLookup({
         if (!data.points.length) {
           setError(
             data.cardName
-              ? `Fandt “${data.cardName}”, men ingen CardMarket-trend at plotte.`
-              : `Ingen match for “${trimmed}”.`,
+              ? `Fandt “${data.cardName}”, men ingen prisudvikling at vise endnu.`
+              : UNAVAILABLE,
           );
         } else {
           setError(null);
         }
-      } catch {
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setResult(null);
-        setError("Netværksfejl — prøv igen om lidt.");
+        setError(UNAVAILABLE);
       }
     });
-  }
 
-  useEffect(() => {
-    if (!initiallyConfigured) return;
-    const trimmed = initialQuery.trim();
-    if (trimmed.length < 2) return;
-    lookup(trimmed);
-    // Run once on mount for shareable ?q= links.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only
-  }, []);
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    lookup(query);
-  }
+    return () => controller.abort();
+  }, [lockedQuery]);
 
   const chartTitle = result?.cardName
     ? `${result.cardName}${result.setName ? ` · ${result.setName}` : ""}`
-    : "Prishistorik (CardMarket EUR)";
+    : "Prisudvikling";
+
+  const showLoading = pending && !result && !error;
+  const showError = Boolean(error && !result?.points.length);
 
   return (
-    <div className="space-y-8">
-      <form onSubmit={onSubmit} className="space-y-3">
-        <label htmlFor="card-query" className="sr-only">
-          Kortnavn
-        </label>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            id="card-query"
-            type="search"
-            name="q"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Søg kort — fx Ragavan, Nimble Pilferer"
-            autoComplete="off"
-            className="w-full flex-1 border border-line bg-ink px-4 py-3 text-parchment placeholder:text-parchment-muted/70 outline-none transition focus:border-accent"
+    <section
+      aria-labelledby="price-trend-heading"
+      className="mt-12 border-t border-line pt-10"
+    >
+      <h2
+        id="price-trend-heading"
+        className="font-display text-2xl tracking-tight text-parchment"
+      >
+        Prisudvikling
+      </h2>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-parchment-muted sm:text-base">
+        Baseret på markedsgennemsnit de seneste 30 dage.
+      </p>
+
+      <div className="mt-8 max-w-3xl">
+        {showLoading ? (
+          <div
+            className="h-56 animate-pulse border border-line bg-ink-elevated/40 sm:h-72"
+            aria-hidden
           />
-          <button
-            type="submit"
-            disabled={pending}
-            className="border border-accent bg-accent/15 px-5 py-3 text-sm font-medium tracking-wide text-accent-bright transition hover:bg-accent/25 disabled:cursor-wait disabled:opacity-60"
-          >
-            {pending ? "Henter…" : "Vis pris"}
-          </button>
-        </div>
-      </form>
+        ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        {SUGGESTIONS.map((name) => (
-          <button
-            key={name}
-            type="button"
-            disabled={pending}
-            onClick={() => lookup(name)}
-            className="border border-line bg-ink-elevated px-3 py-1.5 text-xs text-parchment-muted transition hover:border-accent/50 hover:text-parchment disabled:opacity-50"
+        {showError ? (
+          <p
+            role="status"
+            className="border border-line bg-ink-elevated/60 px-4 py-3 text-sm text-parchment-muted"
           >
-            {name}
-          </button>
-        ))}
+            {error}
+          </p>
+        ) : null}
+
+        {result?.points.length ? (
+          <PriceTrendChart data={result.points} title={chartTitle} />
+        ) : null}
       </div>
-
-      {error ? (
-        <p
-          role="status"
-          className="border border-line bg-ink/60 px-4 py-3 text-sm text-parchment-muted"
-        >
-          {error}
-        </p>
-      ) : null}
-
-      {result?.points.length ? (
-        <PriceTrendChart data={result.points} title={chartTitle} />
-      ) : null}
-    </div>
+    </section>
   );
 }

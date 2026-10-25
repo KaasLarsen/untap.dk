@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getCardPriceTrend } from "@/lib/pokewallet";
 
+const UNAVAILABLE =
+  "Prisudvikling er midlertidigt utilgængelig. Prøv igen senere.";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim() ?? "";
@@ -23,12 +26,14 @@ export async function GET(request: Request) {
   const result = await getCardPriceTrend(q);
 
   if (!result.configured) {
+    console.error(
+      "Price trend unavailable: POKEWALLET_KEY is not configured.",
+    );
     return NextResponse.json(
       {
         ...result,
-        error: "missing_key",
-        message:
-          "POKEWALLET_KEY mangler. Tilføj nøglen i .env.local (se .env.example).",
+        error: "unavailable",
+        message: UNAVAILABLE,
       },
       { status: 503 },
     );
