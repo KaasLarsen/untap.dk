@@ -9,6 +9,14 @@ export type PricePoint = {
   price: number;
 };
 
+export type CardPriceTrendResult = {
+  configured: boolean;
+  query: string;
+  cardName: string | null;
+  setName: string | null;
+  points: PricePoint[];
+};
+
 type CardmarketPriceRow = {
   variant_type?: string;
   avg?: number | null;
@@ -20,16 +28,6 @@ type CardmarketPriceRow = {
   updated_at?: string | null;
 };
 
-type TcgplayerPriceRow = {
-  low_price?: number | null;
-  mid_price?: number | null;
-  high_price?: number | null;
-  market_price?: number | null;
-  direct_low_price?: number | null;
-  updated_at?: string | null;
-  sub_type_name?: string | null;
-};
-
 type PokewalletCard = {
   id: string;
   card_info?: {
@@ -37,10 +35,6 @@ type PokewalletCard = {
     set_name?: string;
     set_code?: string;
   };
-  tcgplayer?: {
-    prices?: TcgplayerPriceRow[];
-    url?: string;
-  } | null;
   cardmarket?: {
     product_name?: string;
     prices?: CardmarketPriceRow[];
@@ -53,14 +47,21 @@ type PokewalletSearchResponse = {
   results?: PokewalletCard[];
 };
 
-function requireApiKey(): string {
-  const key = process.env.POKEWALLET_KEY;
-  if (!key) {
-    throw new Error(
-      "Missing POKEWALLET_KEY. Add it to .env.local (see .env.example).",
-    );
-  }
-  return key;
+export function isPokewalletConfigured(): boolean {
+  return Boolean(process.env.POKEWALLET_KEY?.trim());
+}
+
+function emptyResult(
+  query: string,
+  configured: boolean,
+): CardPriceTrendResult {
+  return {
+    configured,
+    query,
+    cardName: null,
+    setName: null,
+    points: [],
+  };
 }
 
 function toIsoDate(d: Date): string {
@@ -123,22 +124,18 @@ export function mapCardmarketToPricePoints(
   return points;
 }
 
-/**
- * Search PokéWallet MTG and map CardMarket averages into chart-ready EUR points.
- * Server-only — uses POKEWALLET_KEY.
- */
-export async function getCardPriceTrend(query: string): Promise<PricePoint[]> {
+async function fetchCardPriceTrend(
+  query: string,
+): Promise<CardPriceTrendResult> {
   "use cache";
   cacheLife("hours");
 
-  const trimmed = query.trim();
-  if (trimmed.length < 2) return [];
-
-  const apiKey = requireApiKey();
+  const apiKey = process.env.POKEWALLET_KEY?.trim();
+  if (!apiKey) return emptyResult(query, false);
 
   try {
     const url = new URL(`${BASE_URL}/mtg/search`);
-    url.searchParams.set("q", trimmed);
+    url.searchParams.set("q", query);
     url.searchParams.set("limit", "1");
 
     const response = await fetch(url, {
@@ -150,21 +147,48 @@ export async function getCardPriceTrend(query: string): Promise<PricePoint[]> {
 
     if (!response.ok) {
       console.error(
-        `PokéWallet search failed for "${trimmed}": ${response.status} ${response.statusText}`,
+        `PokéWallet search failed for "${query}": ${response.status} ${response.statusText}`,
       );
-      return [];
+      return emptyResult(query, true);
     }
 
     const data = (await response.json()) as PokewalletSearchResponse;
     const card = data.results?.[0];
-    if (!card) return [];
+    if (!card) return emptyResult(query, true);
 
     const row = pickCardmarketRow(card.cardmarket?.prices);
-    if (!row) return [];
+    const cardName =
+      card.card_info?.name ?? card.cardmarket?.product_name ?? null;
+    const setName = card.card_info?.set_name ?? null;
 
-    return mapCardmarketToPricePoints(row);
+    return {
+      configured: true,
+      query,
+      cardName,
+      setName,
+      points: row ? mapCardmarketToPricePoints(row) : [],
+    };
   } catch (error) {
-    console.error(`PokéWallet error for "${trimmed}":`, error);
-    return [];
+    console.error(`PokéWallet error for "${query}":`, error);
+    return emptyResult(query, true);
   }
+}
+
+/**
+ * Search PokéWallet MTG and map CardMarket averages into chart-ready EUR points.
+ * Server-only — uses POKEWALLET_KEY.
+ */
+export async function getCardPriceTrend(
+  query: string,
+): Promise<CardPriceTrendResult> {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) {
+    return emptyResult(trimmed, isPokewalletConfigured());
+  }
+
+  if (!isPokewalletConfigured()) {
+    return emptyResult(trimmed, false);
+  }
+
+  return fetchCardPriceTrend(trimmed);
 }
