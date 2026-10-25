@@ -16,7 +16,49 @@ type DecklistProps = {
   title?: string;
 };
 
+type CardTypeGroup =
+  | "Creatures"
+  | "Planeswalkers"
+  | "Instant"
+  | "Sorcery"
+  | "Enchantments"
+  | "Artifacts"
+  | "Battles"
+  | "Lands"
+  | "Other";
+
 const SECTION_HEADERS = new Set(["sideboard", "side", "sb"]);
+
+const TYPE_GROUP_ORDER: CardTypeGroup[] = [
+  "Creatures",
+  "Planeswalkers",
+  "Instant",
+  "Sorcery",
+  "Enchantments",
+  "Artifacts",
+  "Battles",
+  "Lands",
+  "Other",
+];
+
+function cardTypeGroup(typeLine: string | undefined): CardTypeGroup {
+  if (!typeLine) return "Other";
+
+  const types = typeLine.split("—")[0].toLowerCase();
+
+  // Creature before Land so Land Creatures (e.g. Dryad Arbor) stay under Creatures.
+  if (types.includes("creature")) return "Creatures";
+  if (types.includes("planeswalker")) return "Planeswalkers";
+  if (types.includes("instant")) return "Instant";
+  if (types.includes("sorcery")) return "Sorcery";
+  if (types.includes("enchantment")) return "Enchantments";
+  // Land before Artifact so Artifact Lands group under Lands.
+  if (types.includes("land")) return "Lands";
+  if (types.includes("artifact")) return "Artifacts";
+  if (types.includes("battle")) return "Battles";
+
+  return "Other";
+}
 
 function parseDecklist(raw: string): DecklistEntry[] {
   let section: DecklistEntry["section"] = "main";
@@ -77,6 +119,40 @@ async function resolveCards(
   return new Map(results);
 }
 
+function groupEntriesByType(
+  entries: DecklistEntry[],
+  cards: Map<string, ScryfallCard | null>,
+): { group: CardTypeGroup; entries: DecklistEntry[]; total: number }[] {
+  const buckets = new Map<CardTypeGroup, DecklistEntry[]>();
+
+  for (const entry of entries) {
+    const group = cardTypeGroup(cards.get(entry.name)?.type_line);
+    const list = buckets.get(group);
+    if (list) {
+      list.push(entry);
+    } else {
+      buckets.set(group, [entry]);
+    }
+  }
+
+  return TYPE_GROUP_ORDER.flatMap((group) => {
+    const groupEntries = buckets.get(group);
+    if (!groupEntries || groupEntries.length === 0) return [];
+
+    const sorted = [...groupEntries].sort((a, b) =>
+      a.name.localeCompare(b.name, "en", { sensitivity: "base" }),
+    );
+
+    return [
+      {
+        group,
+        entries: sorted,
+        total: sorted.reduce((sum, entry) => sum + entry.quantity, 0),
+      },
+    ];
+  });
+}
+
 function Section({
   label,
   entries,
@@ -89,9 +165,10 @@ function Section({
   if (entries.length === 0) return null;
 
   const total = entries.reduce((sum, entry) => sum + entry.quantity, 0);
+  const groups = groupEntriesByType(entries, cards);
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-5">
       <div className="flex items-baseline justify-between border-b border-line pb-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-parchment-muted">
           {label}
@@ -100,20 +177,35 @@ function Section({
           {total}
         </span>
       </div>
-      <ul className="space-y-0.5">
-        {entries.map((entry) => {
-          const card = cards.get(entry.name);
-          return (
-            <DecklistTooltip
-              key={`${entry.section}-${entry.name}`}
-              name={entry.name}
-              quantity={entry.quantity}
-              imageUrl={card?.image_uris?.normal}
-              typeLine={card?.type_line}
-            />
-          );
-        })}
-      </ul>
+
+      <div className="space-y-5">
+        {groups.map(({ group, entries: groupEntries, total: groupTotal }) => (
+          <div key={group} className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+                {group}
+              </h4>
+              <span className="font-mono text-[11px] tabular-nums text-parchment-muted/70">
+                {groupTotal}
+              </span>
+            </div>
+            <ul className="space-y-0.5">
+              {groupEntries.map((entry) => {
+                const card = cards.get(entry.name);
+                return (
+                  <DecklistTooltip
+                    key={`${entry.section}-${entry.name}`}
+                    name={entry.name}
+                    quantity={entry.quantity}
+                    imageUrl={card?.image_uris?.normal}
+                    typeLine={card?.type_line}
+                  />
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
