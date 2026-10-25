@@ -79,15 +79,15 @@ export default async function Home() {
 
       <Section id="marked" eyebrow="Søjle 03" title="Marked">
         <p>
-          Priser og købsvejledning, så du ved, hvad dine kort er værd — uden
-          støj. Markedsdelen kommer, når prisfeeds er på plads.
+          Søg på kort og serier, og se aktuelle Scryfall EUR-priser. Prishistorik
+          og grafer venter på snapshots — indtil da kun ægte, aktuelle tal.
         </p>
         <p className="mt-4">
           <Link
             href="/marked"
             className="text-accent-bright underline-offset-4 hover:underline"
           >
-            Marked — kommer snart
+            Åbn Marked
           </Link>
         </p>
       </Section>
