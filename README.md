@@ -29,7 +29,9 @@ npm run dev
 | `/deck/f/[format]/archetype/[id]` | Alle decks af en type |
 | `/deck/f/[format]/event/[eventId]` | Top-decks fra et event |
 | `/deck/[id]` | Detaljevisning (klik kort → billede) |
-| `/marked` | Placeholder (kommer snart) |
+| `/marked` | Søg kort/serier + aktuelle Scryfall EUR-priser |
+| `/marked/kort/[id]` | Kortpris (Scryfall EUR mid) |
+| `/marked/serie/[code]` | Kort i en serie med priser |
 
 ## Deploy
 
