@@ -2,7 +2,7 @@ import type { ScryfallCard } from "@/lib/scryfall";
 
 export type DeckPriceEstimate = {
   currency: "EUR";
-  /** Sum of known Scryfall EUR prices × quantities. */
+  /** Sum of known Scryfall paper EUR prices × quantities. */
   total: number;
   /** Cards with a usable EUR price. */
   pricedCards: number;
@@ -23,7 +23,7 @@ function parseEur(card: ScryfallCard | null | undefined): number | null {
 }
 
 /**
- * Rough paper cost from Scryfall EUR mid prices (main + sideboard).
+ * Rough paper cost from cheapest Scryfall paper EUR prices (main + sideboard).
  */
 export function estimateDeckPriceEur(
   entries: PricedEntry[],

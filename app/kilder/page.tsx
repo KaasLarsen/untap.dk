@@ -28,8 +28,8 @@ export default function KilderPage() {
         </a>
         . Scryfall stiller data og billeder til rådighed under deres egne vilkår;
         kortillustrationer og Magic-relateret IP tilhører Wizards of the Coast.
-        Scryfall EUR-priser bruges også som vejledende papirpris, hvor de er
-        tilgængelige.
+        Deck- og archetype-estimater bruger billigste papir-print med Scryfall
+        EUR, hvor prisen er tilgængelig (vejledende).
       </p>
 
       <h2>MTGTop8</h2>
