@@ -1,4 +1,10 @@
 import { ImageResponse } from "next/og";
+import {
+  UNTAP_ICON_COLORS,
+  UNTAP_MARK_PATHS,
+  UNTAP_MARK_STROKE_WIDTH,
+  UNTAP_MARK_VIEWBOX,
+} from "@/lib/untap-mark";
 
 export const size = {
   width: 32,
@@ -12,7 +18,7 @@ export default function Icon() {
     (
       <div
         style={{
-          background: "#07080b",
+          background: UNTAP_ICON_COLORS.ink,
           width: "100%",
           height: "100%",
           display: "flex",
@@ -23,19 +29,19 @@ export default function Icon() {
         <svg
           width="22"
           height="22"
-          viewBox="0 0 24 24"
+          viewBox={UNTAP_MARK_VIEWBOX}
           fill="none"
         >
           <path
-            d="M6.4 17.2a7.6 7.6 0 1 1 11.9-7.1"
-            stroke="#c9952a"
-            strokeWidth="2.15"
+            d={UNTAP_MARK_PATHS.arc}
+            stroke={UNTAP_ICON_COLORS.accent}
+            strokeWidth={UNTAP_MARK_STROKE_WIDTH}
             strokeLinecap="round"
           />
           <path
-            d="M18.3 10.1v4.4h-4.4"
-            stroke="#c9952a"
-            strokeWidth="2.15"
+            d={UNTAP_MARK_PATHS.chevron}
+            stroke={UNTAP_ICON_COLORS.accent}
+            strokeWidth={UNTAP_MARK_STROKE_WIDTH}
             strokeLinecap="round"
             strokeLinejoin="round"
           />

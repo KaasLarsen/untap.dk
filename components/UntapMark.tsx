@@ -1,3 +1,9 @@
+import {
+  UNTAP_MARK_PATHS,
+  UNTAP_MARK_STROKE_WIDTH,
+  UNTAP_MARK_VIEWBOX,
+} from "@/lib/untap-mark";
+
 type UntapMarkProps = {
   className?: string;
   title?: string;
@@ -9,7 +15,7 @@ export function UntapMark({ className, title }: UntapMarkProps) {
 
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox={UNTAP_MARK_VIEWBOX}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
@@ -19,15 +25,15 @@ export function UntapMark({ className, title }: UntapMarkProps) {
     >
       {title ? <title>{title}</title> : null}
       <path
-        d="M6.4 17.2a7.6 7.6 0 1 1 11.9-7.1"
+        d={UNTAP_MARK_PATHS.arc}
         stroke="currentColor"
-        strokeWidth="2.15"
+        strokeWidth={UNTAP_MARK_STROKE_WIDTH}
         strokeLinecap="round"
       />
       <path
-        d="M18.3 10.1v4.4h-4.4"
+        d={UNTAP_MARK_PATHS.chevron}
         stroke="currentColor"
-        strokeWidth="2.15"
+        strokeWidth={UNTAP_MARK_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
