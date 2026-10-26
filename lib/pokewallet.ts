@@ -1,6 +1,8 @@
 import { cacheLife } from "next/cache";
 
 const BASE_URL = "https://api.pokewallet.io";
+/** Fetch enough printings to skip tokens / promo rows without Cardmarket prices. */
+const SEARCH_LIMIT = 25;
 
 export type PricePoint = {
   /** ISO date (YYYY-MM-DD). */
@@ -124,6 +126,60 @@ export function mapCardmarketToPricePoints(
   return points;
 }
 
+function cardDisplayName(card: PokewalletCard): string {
+  return (card.card_info?.name ?? card.cardmarket?.product_name ?? "").trim();
+}
+
+function cardPoints(card: PokewalletCard): PricePoint[] {
+  const row = pickCardmarketRow(card.cardmarket?.prices);
+  return row ? mapCardmarketToPricePoints(row) : [];
+}
+
+/**
+ * Rank printings so exact/near name matches with Cardmarket prices win over
+ * tokens, promos, and the first arbitrary hit.
+ */
+export function scorePokewalletCard(
+  card: PokewalletCard,
+  query: string,
+): number {
+  const name = cardDisplayName(card).toLowerCase();
+  const set = (card.card_info?.set_name ?? "").toLowerCase();
+  const q = query.toLowerCase().trim();
+  if (!name) return -1000;
+
+  let score = 0;
+
+  if (/\btoken\b/.test(name) && !/\btoken\b/.test(q)) score -= 120;
+
+  if (name === q) score += 100;
+  else if (q.startsWith(name) || name.startsWith(q)) score += 70;
+  else if (q.includes(name)) score += 50;
+  else if (name.includes(q)) score += 25;
+
+  if (set && q.includes(set)) score += 20;
+
+  const points = cardPoints(card);
+  if (points.length > 0) score += 55;
+  else score -= 45;
+
+  return score;
+}
+
+export function pickBestPokewalletCard(
+  results: PokewalletCard[],
+  query: string,
+): PokewalletCard | null {
+  if (!results.length) return null;
+
+  const ranked = [...results].sort(
+    (a, b) => scorePokewalletCard(b, query) - scorePokewalletCard(a, query),
+  );
+
+  const withPoints = ranked.find((card) => cardPoints(card).length > 0);
+  return withPoints ?? ranked[0];
+}
+
 async function fetchCardPriceTrend(
   query: string,
 ): Promise<CardPriceTrendResult> {
@@ -136,7 +192,7 @@ async function fetchCardPriceTrend(
   try {
     const url = new URL(`${BASE_URL}/mtg/search`);
     url.searchParams.set("q", query);
-    url.searchParams.set("limit", "1");
+    url.searchParams.set("limit", String(SEARCH_LIMIT));
 
     const response = await fetch(url, {
       headers: {
@@ -153,12 +209,10 @@ async function fetchCardPriceTrend(
     }
 
     const data = (await response.json()) as PokewalletSearchResponse;
-    const card = data.results?.[0];
+    const card = pickBestPokewalletCard(data.results ?? [], query);
     if (!card) return emptyResult(query, true);
 
-    const row = pickCardmarketRow(card.cardmarket?.prices);
-    const cardName =
-      card.card_info?.name ?? card.cardmarket?.product_name ?? null;
+    const cardName = cardDisplayName(card) || null;
     const setName = card.card_info?.set_name ?? null;
 
     return {
@@ -166,7 +220,7 @@ async function fetchCardPriceTrend(
       query,
       cardName,
       setName,
-      points: row ? mapCardmarketToPricePoints(row) : [],
+      points: cardPoints(card),
     };
   } catch (error) {
     console.error(`PokéWallet error for "${query}":`, error);
