@@ -1,7 +1,7 @@
 import type { ScryfallCard } from "@/lib/scryfall";
 
 export function parseEurPrice(card: ScryfallCard | null | undefined): number | null {
-  const raw = card?.prices?.eur;
+  const raw = card?.prices?.eur ?? card?.prices?.eur_foil;
   if (raw == null || raw === "") return null;
   const value = Number.parseFloat(raw);
   return Number.isFinite(value) ? value : null;

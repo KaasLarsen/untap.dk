@@ -1,6 +1,10 @@
-import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
+import {
+  estimateDeckPriceEur,
+  formatEurEstimate,
+  isReliableDeckPriceEstimate,
+} from "@/lib/deck-price";
 import { normalizeCardName } from "@/lib/decklist-text";
-import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
+import { getCardsByNames, type ScryfallCard } from "@/lib/scryfall";
 import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
 
@@ -111,14 +115,8 @@ function normalizeEntries(
 async function resolveCards(
   names: string[],
 ): Promise<Map<string, ScryfallCard | null>> {
-  const unique = [...new Set(names)];
-  const results = await Promise.all(
-    unique.map(async (name) => {
-      const card = await getCardByName(name);
-      return [name, card] as const;
-    }),
-  );
-  return new Map(results);
+  const record = await getCardsByNames([...new Set(names)]);
+  return new Map(Object.entries(record));
 }
 
 function groupEntriesByType(
@@ -239,7 +237,7 @@ export async function Decklist({
           </p>
         </div>
 
-        {price.pricedCards > 0 ? (
+        {isReliableDeckPriceEstimate(price) ? (
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-parchment-muted">
               Ca. pris at samle

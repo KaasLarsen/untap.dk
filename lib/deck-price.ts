@@ -16,8 +16,8 @@ type PricedEntry = {
 };
 
 function parseEur(card: ScryfallCard | null | undefined): number | null {
-  const raw = card?.prices?.eur;
-  if (!raw) return null;
+  const raw = card?.prices?.eur ?? card?.prices?.eur_foil;
+  if (raw == null || raw === "") return null;
   const value = Number.parseFloat(raw);
   return Number.isFinite(value) ? value : null;
 }
@@ -49,6 +49,22 @@ export function estimateDeckPriceEur(
     pricedCards,
     missingCards,
   };
+}
+
+/** Hide incomplete estimates that would otherwise show as misleading "0 €". */
+export function isReliableDeckPriceEstimate(
+  estimate: DeckPriceEstimate,
+): boolean {
+  const cardCount = estimate.pricedCards + estimate.missingCards;
+  if (cardCount === 0 || estimate.pricedCards === 0) return false;
+
+  const coverage = estimate.pricedCards / cardCount;
+  if (coverage < 0.5) return false;
+
+  // formatEurEstimate rounds to whole euros — avoid "0 €" with gaps.
+  if (estimate.total < 0.5) return false;
+
+  return true;
 }
 
 export function formatEurEstimate(total: number): string {

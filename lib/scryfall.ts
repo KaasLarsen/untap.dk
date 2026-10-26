@@ -23,6 +23,7 @@ export interface ScryfallCard {
   }>;
   prices: {
     eur?: string | null;
+    eur_foil?: string | null;
     usd?: string | null;
   };
 }
@@ -54,6 +55,116 @@ function normalizeCard(data: ScryfallCard): ScryfallCard {
   return { ...data, image_uris: faceImage };
 }
 
+function hasPaperEur(card: ScryfallCard | null | undefined): boolean {
+  const eur = card?.prices?.eur;
+  const foil = card?.prices?.eur_foil;
+  return (eur != null && eur !== "") || (foil != null && foil !== "");
+}
+
+function parsePriceString(raw: string | null | undefined): number | null {
+  if (raw == null || raw === "") return null;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Scryfall `/cards/named` often returns an online-only / promo printing with
+ * null paper EUR. Prefer the cheapest printing that has eur or eur_foil so
+ * deck estimates are not under-counted into "0 €".
+ */
+async function cheapestPaperEur(
+  cardName: string,
+): Promise<string | null> {
+  "use cache";
+  cacheLife("days");
+
+  const query = `!"${cardName.replaceAll('"', "")}" (eur>0 OR eur_foil>0)`;
+  const params = new URLSearchParams({
+    q: query,
+    unique: "prints",
+    order: "eur",
+    dir: "asc",
+  });
+
+  const response = await fetch(`${BASE_URL}/cards/search?${params}`, {
+    headers: SCRYFALL_HEADERS,
+  });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Scryfall API fejl: ${response.status} ${response.statusText}`);
+  }
+
+  const data = (await response.json()) as { data?: ScryfallCard[] };
+  let best: number | null = null;
+
+  for (const print of data.data ?? []) {
+    for (const raw of [print.prices?.eur, print.prices?.eur_foil]) {
+      const value = parsePriceString(raw);
+      if (value == null) continue;
+      if (best == null || value < best) best = value;
+    }
+  }
+
+  return best == null ? null : best.toFixed(2);
+}
+
+async function withPaperEur(card: ScryfallCard): Promise<ScryfallCard> {
+  if (hasPaperEur(card)) {
+    // Prefer non-foil EUR when present; copy foil into eur only when needed.
+    if (card.prices?.eur) return card;
+    return {
+      ...card,
+      prices: {
+        ...card.prices,
+        eur: card.prices.eur_foil,
+      },
+    };
+  }
+
+  try {
+    const eur = await cheapestPaperEur(card.name);
+    if (!eur) return card;
+    return {
+      ...card,
+      prices: {
+        ...card.prices,
+        eur,
+      },
+    };
+  } catch (error) {
+    console.error(`Kunne ikke backfille EUR for "${card.name}":`, error);
+    return card;
+  }
+}
+
+async function fetchNamedCard(cardName: string): Promise<ScryfallCard | null> {
+  const exact = await fetch(
+    `${BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`,
+    { headers: SCRYFALL_HEADERS },
+  );
+
+  if (exact.ok) {
+    return normalizeCard((await exact.json()) as ScryfallCard);
+  }
+
+  if (exact.status === 404) {
+    const fuzzy = await fetch(
+      `${BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`,
+      { headers: SCRYFALL_HEADERS },
+    );
+
+    if (fuzzy.status === 404) return null;
+    if (!fuzzy.ok) {
+      throw new Error(`Scryfall API fejl: ${fuzzy.status} ${fuzzy.statusText}`);
+    }
+
+    return normalizeCard((await fuzzy.json()) as ScryfallCard);
+  }
+
+  throw new Error(`Scryfall API fejl: ${exact.status} ${exact.statusText}`);
+}
+
 /**
  * Henter data for et specifikt kort baseret på det nøjagtige navn.
  * Scryfall API kræver ikke API-nøgle, men vi skal respektere deres rate-limit (max 10 kald pr. sekund).
@@ -65,37 +176,91 @@ export async function getCardByName(
   cacheLife("days");
 
   try {
-    const exact = await fetch(
-      `${BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`,
-      { headers: SCRYFALL_HEADERS },
-    );
-
-    if (exact.ok) {
-      const data = (await exact.json()) as ScryfallCard;
-      return normalizeCard(data);
-    }
-
-    if (exact.status !== 404) {
-      throw new Error(`Scryfall API fejl: ${exact.statusText}`);
-    }
-
-    // MTGTop8 / exports sometimes use non-exact oracle names.
-    const fuzzy = await fetch(
-      `${BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`,
-      { headers: SCRYFALL_HEADERS },
-    );
-
-    if (!fuzzy.ok) {
-      if (fuzzy.status === 404) return null;
-      throw new Error(`Scryfall API fejl: ${fuzzy.statusText}`);
-    }
-
-    const data = (await fuzzy.json()) as ScryfallCard;
-    return normalizeCard(data);
+    const card = await fetchNamedCard(cardName);
+    if (!card) return null;
+    return withPaperEur(card);
   } catch (error) {
+    // Do not cache transient failures as null — rethrow rate limits / 5xx.
+    const message = error instanceof Error ? error.message : String(error);
+    if (/429|rate limit|50\d/i.test(message)) throw error;
     console.error(`Kunne ikke hente kortet "${cardName}":`, error);
     return null;
   }
+}
+
+type CollectionResponse = {
+  data?: ScryfallCard[];
+  not_found?: Array<{ name?: string }>;
+};
+
+const COLLECTION_CHUNK = 75;
+
+/**
+ * Batch-lookup by oracle name via `/cards/collection` (fewer rate-limit hits),
+ * then backfill paper EUR from another printing when the default has none.
+ * Returns a plain object so `"use cache"` can serialize the result.
+ */
+export async function getCardsByNames(
+  names: string[],
+): Promise<Record<string, ScryfallCard | null>> {
+  "use cache";
+  cacheLife("days");
+
+  const unique = [...new Set(names.map((name) => name.trim()).filter(Boolean))];
+  const result: Record<string, ScryfallCard | null> = {};
+
+  for (let i = 0; i < unique.length; i += COLLECTION_CHUNK) {
+    const chunk = unique.slice(i, i + COLLECTION_CHUNK);
+    const response = await fetch(`${BASE_URL}/cards/collection`, {
+      method: "POST",
+      headers: {
+        ...SCRYFALL_HEADERS,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        identifiers: chunk.map((name) => ({ name })),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Scryfall collection fejl: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const payload = (await response.json()) as CollectionResponse;
+    const byLower = new Map<string, ScryfallCard>();
+
+    for (const card of payload.data ?? []) {
+      const normalized = normalizeCard(card);
+      byLower.set(normalized.name.toLowerCase(), normalized);
+      // Split cards may be requested as either face; keep face keys too.
+      for (const face of normalized.card_faces ?? []) {
+        if (face.name) byLower.set(face.name.toLowerCase(), normalized);
+      }
+    }
+
+    for (const name of chunk) {
+      let match = byLower.get(name.toLowerCase()) ?? null;
+      if (!match) {
+        // Collection is exact-oracle; fall back to named/fuzzy for MTGTop8 quirks.
+        try {
+          match = await fetchNamedCard(name);
+        } catch (error) {
+          console.error(`Kunne ikke hente kortet "${name}":`, error);
+          match = null;
+        }
+      }
+      result[name] = match ? await withPaperEur(match) : null;
+    }
+
+    // Soft pacing between chunks (Scryfall ~10 req/s).
+    if (i + COLLECTION_CHUNK < unique.length) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
+
+  return result;
 }
 
 export async function getCardById(id: string): Promise<ScryfallCard | null> {

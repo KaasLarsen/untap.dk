@@ -1,5 +1,9 @@
 import { cacheLife } from "next/cache";
-import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
+import {
+  estimateDeckPriceEur,
+  formatEurEstimate,
+  isReliableDeckPriceEstimate,
+} from "@/lib/deck-price";
 import { parseDecklistText } from "@/lib/decklist-text";
 import type { FormatCode } from "@/lib/formats";
 import { getFormatBySlug } from "@/lib/formats";
@@ -15,7 +19,7 @@ import {
   type FormatEvent,
   type MetagameArchetype,
 } from "@/lib/mtgtop8";
-import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
+import { getCardsByNames, type ScryfallCard } from "@/lib/scryfall";
 
 export interface TournamentDeckCard {
   name: string;
@@ -207,14 +211,8 @@ function median(values: number[]): number {
 async function resolveCardsForPricing(
   names: string[],
 ): Promise<Map<string, ScryfallCard | null>> {
-  const unique = [...new Set(names)];
-  const results = await Promise.all(
-    unique.map(async (name) => {
-      const card = await getCardByName(name);
-      return [name, card] as const;
-    }),
-  );
-  return new Map(results);
+  const record = await getCardsByNames([...new Set(names)]);
+  return new Map(Object.entries(record));
 }
 
 /**
@@ -243,7 +241,7 @@ export async function getArchetypePriceEstimate(
         deck.cards.map((card) => card.name),
       );
       const estimate = estimateDeckPriceEur(deck.cards, cards);
-      if (estimate.pricedCards > 0) {
+      if (isReliableDeckPriceEstimate(estimate)) {
         totals.push(estimate.total);
       }
     }
@@ -251,6 +249,9 @@ export async function getArchetypePriceEstimate(
     if (totals.length === 0) return null;
 
     const total = median(totals);
+    // Guard median too — incomplete samples can still collapse to 0 €.
+    if (total < 0.5) return null;
+
     return {
       total,
       formatted: formatEurEstimate(total),
