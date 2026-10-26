@@ -7,9 +7,12 @@ export type ParsedDeckCard = {
 const SECTION_HEADERS = new Set(["sideboard", "side", "sb"]);
 
 export function normalizeCardName(name: string): string {
+  // Preserve existing "//" split markers first. A bare "/" pass afterwards
+  // would otherwise rewrite "Wear // Tear" into "Wear //  // Tear".
   return name
     .replace(/\s*\/\/\s*/g, " // ")
-    .replace(/\s*\/\s*/g, " // ")
+    .replace(/(^|[^/])\s*\/\s*([^/]|$)/g, "$1 // $2")
+    .replace(/\s+/g, " ")
     .trim();
 }
 

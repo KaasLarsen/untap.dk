@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import { createPortal } from "react-dom";
 
 type DecklistTooltipProps = {
   name: string;
@@ -18,6 +25,10 @@ type PanelPos = {
 const PANEL_WIDTH = 244;
 const PANEL_HEIGHT = 360;
 
+function canHoverPreview(): boolean {
+  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
+
 export function DecklistTooltip({
   name,
   quantity,
@@ -28,6 +39,12 @@ export function DecklistTooltip({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<PanelPos>({ top: 0, left: 0 });
+  const [mounted, setMounted] = useState(false);
+  const hasImage = Boolean(imageUrl);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open || !buttonRef.current) return;
@@ -86,53 +103,94 @@ export function DecklistTooltip({
     };
   }, [open, tooltipId]);
 
+  function openPreview() {
+    if (!hasImage) return;
+    setOpen(true);
+  }
+
+  function onClick(event: ReactMouseEvent<HTMLButtonElement>) {
+    if (!hasImage) return;
+    // Desktop hover already shows the preview; click is for touch / keyboard.
+    if (canHoverPreview() && open) return;
+    event.preventDefault();
+    setOpen((value) => !value);
+  }
+
+  const panel =
+    open && imageUrl && mounted
+      ? createPortal(
+          <div
+            id={tooltipId}
+            role="dialog"
+            aria-label={name}
+            className="pointer-events-none fixed z-[100] w-60 animate-fade-in"
+            style={{ top: pos.top, left: pos.left }}
+          >
+            <div className="overflow-hidden rounded-lg border border-line bg-ink-elevated shadow-xl shadow-parchment/10">
+              <Image
+                src={imageUrl}
+                alt={name}
+                width={244}
+                height={340}
+                className="h-auto w-full max-w-none"
+                unoptimized
+                priority
+              />
+              {typeLine ? (
+                <p className="border-t border-line px-3 py-2 text-xs text-parchment-muted">
+                  {typeLine}
+                </p>
+              ) : null}
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <li className="relative">
       <button
         ref={buttonRef}
         type="button"
-        className="group flex w-full items-baseline gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-ink-soft focus-visible:bg-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        disabled={!hasImage}
+        className={`group flex w-full items-baseline gap-3 rounded-md px-2 py-1.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+          hasImage
+            ? "cursor-pointer hover:bg-ink-soft focus-visible:bg-ink-soft"
+            : "cursor-default opacity-90"
+        }`}
         aria-expanded={open}
         aria-controls={open ? tooltipId : undefined}
-        onClick={() => {
-          if (!imageUrl) return;
-          setOpen((value) => !value);
+        aria-haspopup={hasImage ? "dialog" : undefined}
+        onMouseEnter={() => {
+          if (canHoverPreview()) openPreview();
         }}
+        onMouseLeave={() => {
+          if (canHoverPreview()) setOpen(false);
+        }}
+        onFocus={() => {
+          if (canHoverPreview()) openPreview();
+        }}
+        onBlur={() => {
+          if (canHoverPreview()) setOpen(false);
+        }}
+        onClick={onClick}
       >
-        <span className="w-7 shrink-0 font-mono text-sm tabular-nums text-parchment-muted transition-colors group-hover:text-accent">
+        <span
+          className={`w-7 shrink-0 font-mono text-sm tabular-nums text-parchment-muted transition-colors ${
+            hasImage ? "group-hover:text-accent" : ""
+          }`}
+        >
           {quantity}
         </span>
-        <span className="text-[15px] tracking-tight text-parchment transition-colors group-hover:text-accent">
+        <span
+          className={`text-[15px] tracking-tight text-parchment transition-colors ${
+            hasImage ? "group-hover:text-accent" : ""
+          }`}
+        >
           {name}
         </span>
       </button>
-
-      {open && imageUrl ? (
-        <div
-          id={tooltipId}
-          role="dialog"
-          aria-label={name}
-          className="fixed z-50 w-60 animate-fade-in"
-          style={{ top: pos.top, left: pos.left }}
-        >
-          <div className="overflow-hidden rounded-lg border border-line bg-ink-elevated shadow-xl shadow-parchment/10">
-            <Image
-              src={imageUrl}
-              alt={name}
-              width={244}
-              height={340}
-              className="h-auto w-full max-w-none"
-              unoptimized
-              priority
-            />
-            {typeLine ? (
-              <p className="border-t border-line px-3 py-2 text-xs text-parchment-muted">
-                {typeLine}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+      {panel}
     </li>
   );
 }

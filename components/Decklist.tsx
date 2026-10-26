@@ -1,4 +1,5 @@
 import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
+import { normalizeCardName } from "@/lib/decklist-text";
 import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
 import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
@@ -82,7 +83,7 @@ function parseDecklist(raw: string): DecklistEntry[] {
     if (!match) continue;
 
     const quantity = Number.parseInt(match[1], 10);
-    const name = match[2].trim();
+    const name = normalizeCardName(match[2]);
     if (!quantity || !name) continue;
 
     entries.push({ quantity, name, section });
@@ -95,11 +96,13 @@ function normalizeEntries(
   entries: DecklistEntry[] | TournamentDeckCard[],
 ): DecklistEntry[] {
   return entries.map((entry) => {
-    if ("section" in entry) return entry;
+    if ("section" in entry) {
+      return { ...entry, name: normalizeCardName(entry.name) };
+    }
 
     return {
       quantity: entry.quantity,
-      name: entry.name,
+      name: normalizeCardName(entry.name),
       section: entry.is_sideboard ? "sideboard" : "main",
     };
   });
@@ -232,7 +235,7 @@ export async function Decklist({
             {title}
           </h2>
           <p className="mt-1 text-sm text-parchment-muted">
-            Tryk på et kortnavn for at se billedet.
+            Hold over eller tryk på et kortnavn for at se billedet.
           </p>
         </div>
 

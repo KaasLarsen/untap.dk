@@ -65,17 +65,32 @@ export async function getCardByName(
   cacheLife("days");
 
   try {
-    const response = await fetch(
+    const exact = await fetch(
       `${BASE_URL}/cards/named?exact=${encodeURIComponent(cardName)}`,
       { headers: SCRYFALL_HEADERS },
     );
 
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error(`Scryfall API fejl: ${response.statusText}`);
+    if (exact.ok) {
+      const data = (await exact.json()) as ScryfallCard;
+      return normalizeCard(data);
     }
 
-    const data = (await response.json()) as ScryfallCard;
+    if (exact.status !== 404) {
+      throw new Error(`Scryfall API fejl: ${exact.statusText}`);
+    }
+
+    // MTGTop8 / exports sometimes use non-exact oracle names.
+    const fuzzy = await fetch(
+      `${BASE_URL}/cards/named?fuzzy=${encodeURIComponent(cardName)}`,
+      { headers: SCRYFALL_HEADERS },
+    );
+
+    if (!fuzzy.ok) {
+      if (fuzzy.status === 404) return null;
+      throw new Error(`Scryfall API fejl: ${fuzzy.statusText}`);
+    }
+
+    const data = (await fuzzy.json()) as ScryfallCard;
     return normalizeCard(data);
   } catch (error) {
     console.error(`Kunne ikke hente kortet "${cardName}":`, error);

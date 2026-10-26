@@ -6,7 +6,7 @@ Dansk Magic: The Gathering-hub — **Untap, Upkeep, Draw.**
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Markdown under `content/` (ingen CMS endnu)
-- Scryfall til kortdata
+- Kortdata og EUR-priser til Marked/decklists
 - MTGTop8 til seneste tournament decklists (ingen API-nøgle)
 - Light mode som default (`lang="da"`)
 
@@ -29,8 +29,8 @@ npm run dev
 | `/deck/f/[format]/archetype/[id]` | Alle decks af en type |
 | `/deck/f/[format]/event/[eventId]` | Top-decks fra et event |
 | `/deck/[id]` | Detaljevisning (klik kort → billede) |
-| `/marked` | Søg kort/serier + aktuelle Scryfall EUR-priser |
-| `/marked/kort/[id]` | Kortpris (Scryfall EUR mid) |
+| `/marked` | Søg kort/serier + aktuelle EUR-priser |
+| `/marked/kort/[id]` | Kortpris (EUR mid) |
 | `/marked/serie/[code]` | Kort i en serie med priser |
 
 ## Deploy
