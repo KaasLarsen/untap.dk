@@ -74,24 +74,37 @@ function daysBefore(base: Date, days: number): Date {
   return next;
 }
 
+function rowHasPriceData(row: CardmarketPriceRow): boolean {
+  return (
+    (row.trend != null && Number.isFinite(row.trend)) ||
+    (row.avg != null && Number.isFinite(row.avg)) ||
+    (row.avg1 != null && Number.isFinite(row.avg1)) ||
+    (row.avg7 != null && Number.isFinite(row.avg7)) ||
+    (row.avg30 != null && Number.isFinite(row.avg30))
+  );
+}
+
 function pickCardmarketRow(
   prices: CardmarketPriceRow[] | undefined,
 ): CardmarketPriceRow | null {
   if (!prices?.length) return null;
 
-  const normal = prices.find((row) => row.variant_type === "normal");
-  if (normal) return normal;
+  const withData = prices.find(rowHasPriceData);
+  if (withData) return withData;
 
-  return (
-    prices.find(
-      (row) =>
-        row.trend != null ||
-        row.avg != null ||
-        row.avg1 != null ||
-        row.avg7 != null ||
-        row.avg30 != null,
-    ) ?? prices[0]
-  );
+  const normal = prices.find((row) => row.variant_type === "normal");
+  return normal ?? prices[0];
+}
+
+function pickBestCard(results: PokewalletCard[]): PokewalletCard | null {
+  if (!results.length) return null;
+
+  const withTrend = results.find((card) => {
+    const row = pickCardmarketRow(card.cardmarket?.prices);
+    return row != null && mapCardmarketToPricePoints(row).length > 0;
+  });
+
+  return withTrend ?? results[0];
 }
 
 /**
@@ -136,7 +149,7 @@ async function fetchCardPriceTrend(
   try {
     const url = new URL(`${BASE_URL}/mtg/search`);
     url.searchParams.set("q", query);
-    url.searchParams.set("limit", "1");
+    url.searchParams.set("limit", "20");
 
     const response = await fetch(url, {
       headers: {
@@ -153,7 +166,7 @@ async function fetchCardPriceTrend(
     }
 
     const data = (await response.json()) as PokewalletSearchResponse;
-    const card = data.results?.[0];
+    const card = pickBestCard(data.results ?? []);
     if (!card) return emptyResult(query, true);
 
     const row = pickCardmarketRow(card.cardmarket?.prices);

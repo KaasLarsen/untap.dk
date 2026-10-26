@@ -1,18 +1,11 @@
 import { PriceTrendChart } from "@/components/PriceTrendChart";
-import { getCardPriceTrend } from "@/lib/pokewallet";
+import { getCardPriceTrend, type CardPriceTrendResult } from "@/lib/pokewallet";
 
 type CardPriceHistoryProps = {
   cardName: string;
   setName: string;
   setCode: string;
 };
-
-function buildTrendQuery(cardName: string, setName: string, setCode: string): string {
-  const name = cardName.trim();
-  const set = setName.trim() || setCode.trim();
-  if (!set) return name;
-  return `${name} ${set}`;
-}
 
 function emptyMessage(result: {
   configured: boolean;
@@ -27,17 +20,33 @@ function emptyMessage(result: {
   return "Ingen Cardmarket-trend for dette print endnu.";
 }
 
+async function resolveTrend(
+  cardName: string,
+  setCode: string,
+): Promise<CardPriceTrendResult> {
+  const name = cardName.trim();
+  const primary = await getCardPriceTrend(name);
+  if (primary.points.length > 0) return primary;
+
+  const code = setCode.trim();
+  if (!code) return primary;
+
+  const withSet = await getCardPriceTrend(`${name} ${code}`);
+  if (withSet.points.length > 0) return withSet;
+
+  // Prefer a named match without points over a total miss.
+  return withSet.cardName ? withSet : primary;
+}
+
 /**
  * Sparse Cardmarket EUR trend via PokéWallet (avg30 / avg7 / avg1 / trend).
  * Not daily history — labeled as such by PriceTrendChart.
  */
 export async function CardPriceHistory({
   cardName,
-  setName,
   setCode,
 }: CardPriceHistoryProps) {
-  const query = buildTrendQuery(cardName, setName, setCode);
-  const result = await getCardPriceTrend(query);
+  const result = await resolveTrend(cardName, setCode);
 
   const chartTitle = result.cardName
     ? `${result.cardName}${result.setName ? ` · ${result.setName}` : ""}`

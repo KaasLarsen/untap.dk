@@ -23,7 +23,7 @@ function parseTab(tab: string | undefined): "kort" | "serier" {
 
 export default function MarkedPage({ searchParams }: MarkedPageProps) {
   return (
-    <main className="relative isolate flex-1 overflow-hidden">
+    <main className="relative isolate flex-1 overflow-x-hidden">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 hero-atmosphere"
