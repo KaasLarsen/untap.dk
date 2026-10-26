@@ -34,24 +34,25 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const blurTimer = useRef<number | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const autocompleteAbortRef = useRef<AbortController | null>(null);
+  const printsAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (tab !== "kort" || step !== "names") {
-      abortRef.current?.abort();
+      autocompleteAbortRef.current?.abort();
       return;
     }
 
     const trimmed = value.trim();
     if (trimmed.length < 2 || /[:"()<>={}]/.test(trimmed)) {
-      abortRef.current?.abort();
+      autocompleteAbortRef.current?.abort();
       return;
     }
 
     const timer = window.setTimeout(() => {
-      abortRef.current?.abort();
+      autocompleteAbortRef.current?.abort();
       const controller = new AbortController();
-      abortRef.current = controller;
+      autocompleteAbortRef.current = controller;
       setLoading(true);
 
       fetch(`/api/cards/autocomplete?q=${encodeURIComponent(trimmed)}`, {
@@ -80,7 +81,7 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
 
     return () => {
       window.clearTimeout(timer);
-      abortRef.current?.abort();
+      autocompleteAbortRef.current?.abort();
     };
   }, [value, tab, step]);
 
@@ -117,9 +118,10 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
   }
 
   function loadPrints(name: string) {
-    abortRef.current?.abort();
+    autocompleteAbortRef.current?.abort();
+    printsAbortRef.current?.abort();
     const controller = new AbortController();
-    abortRef.current = controller;
+    printsAbortRef.current = controller;
     setValue(name);
     setSelectedName(name);
     setStep("prints");
@@ -139,6 +141,7 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
         setPrints(next);
         setActiveIndex(next.length > 0 ? 0 : -1);
         setOpen(true);
+        setLoading(false);
         if (next.length === 0) {
           // Exact name with no print hits — fall back to search results.
           goToSearch(name, "kort");
@@ -149,10 +152,8 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
           return;
         }
         setPrints([]);
+        setLoading(false);
         goToSearch(name, "kort");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
       });
   }
 
