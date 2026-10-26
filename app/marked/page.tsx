@@ -78,7 +78,7 @@ async function MarkedSearchAndResults({
 
   return (
     <>
-      <div className="animate-fade-rise delay-3">
+      <div className="relative z-20 animate-fade-rise delay-3">
         <MarkedSearchForm q={q} tab={tab} />
       </div>
       <Suspense key={`${tab}:${q}`} fallback={<ResultsFallback tab={tab} />}>
