@@ -48,9 +48,10 @@ export default function PrivatlivPage() {
       <h2>Analytics og markedsføring</h2>
       <p>
         Vi bruger <strong>ikke</strong> tredjeparts-analyseværktøjer (fx Google
-        Analytics) eller markedsføringscookies på Untap.dk på nuværende
-        tidspunkt. Hvis det ændrer sig, opdaterer vi denne politik og{" "}
-        <Link href="/cookies">cookiepolitikken</Link>.
+        Analytics) på Untap.dk. Vi viser affiliate-annoncer via Partner Ads; se{" "}
+        <Link href="/cookies">cookiepolitikken</Link> for, hvordan
+        partner-klik/visninger kan involvere tredjepartscookies hos Partner Ads
+        eller butikkerne.
       </p>
 
       <h2>Videregivelse</h2>
@@ -58,7 +59,8 @@ export default function PrivatlivPage() {
         Vi sælger ikke dine oplysninger. Hostingleverandører (fx Vercel) kan
         behandle tekniske data som led i driften. Datakilder som Scryfall,
         MTGTop8 m.fl. bruges til kort- og turneringsindhold — ikke til at
-        profilere dig som bruger.
+        profilere dig som bruger. Ved klik på partnerannoncer sendes du til
+        Partner Ads / forhandleren, som behandler data efter egne politikker.
       </p>
 
       <h2>Opbevaring</h2>

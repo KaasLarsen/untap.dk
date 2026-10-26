@@ -7,7 +7,9 @@ import { FormatMenu } from "@/components/FormatMenu";
 import { FormatViewTabs } from "@/components/FormatViewTabs";
 import { MetagameList } from "@/components/MetagameList";
 import { PageShell } from "@/components/PageShell";
+import { PartnerBanner } from "@/components/PartnerBanner";
 import { getFormatBySlug } from "@/lib/formats";
+import { getPageLeaderboardBanner } from "@/lib/partners";
 import { getFormatEvents, getFormatMetagame } from "@/lib/tournaments";
 
 type PageProps = {
@@ -101,6 +103,10 @@ async function FormatHub({ params, searchParams }: PageProps) {
           <MetagamePanel formatSlug={format.slug} formatCode={format.code} />
         )}
       </Suspense>
+
+      <PartnerBanner
+        banner={getPageLeaderboardBanner(`deck-f-${format.slug}`)}
+      />
 
       <p>
         <Link

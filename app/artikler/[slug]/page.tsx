@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleBody } from "@/components/ArticleBody";
 import { PageShell } from "@/components/PageShell";
+import { PartnerBanner } from "@/components/PartnerBanner";
 import { getArticleBySlug, getArticleSlugs } from "@/lib/content";
+import { getArticleMediumBanner } from "@/lib/partners";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -60,6 +62,7 @@ export default async function ArticlePage({ params }: PageProps) {
       <div>
         <ArticleBody html={article.contentHtml} />
       </div>
+      <PartnerBanner banner={getArticleMediumBanner(slug)} />
     </PageShell>
   );
 }

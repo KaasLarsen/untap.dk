@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Hero } from "@/components/Hero";
+import { PartnerBanner } from "@/components/PartnerBanner";
 import { Section } from "@/components/Section";
 import { TournamentDeckGrid } from "@/components/TournamentDeckGrid";
+import { getHomeBillboard } from "@/lib/partners";
 import { getLatestTournamentDecks } from "@/lib/tournaments";
 
 async function LatestTournamentDecks() {
@@ -24,6 +26,8 @@ function TournamentDeckGridFallback() {
 }
 
 export default function Home() {
+  const billboard = getHomeBillboard();
+
   return (
     <>
       <Hero />
@@ -79,6 +83,13 @@ export default function Home() {
           </div>
         </div>
       </Section>
+
+      <div className="mx-auto w-full max-w-6xl px-5 py-4 sm:px-8">
+        <PartnerBanner
+          banner={billboard.desktop}
+          mobileBanner={billboard.mobile}
+        />
+      </div>
 
       <Section
         id="decklists"

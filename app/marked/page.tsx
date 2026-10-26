@@ -4,6 +4,8 @@ import { MarkedCardGrid } from "@/components/MarkedCardGrid";
 import { MarkedPriceLookup } from "@/components/MarkedPriceLookup";
 import { MarkedSearchForm } from "@/components/MarkedSearchForm";
 import { MarkedSetList } from "@/components/MarkedSetList";
+import { PartnerBanner } from "@/components/PartnerBanner";
+import { getPageLeaderboardBanner } from "@/lib/partners";
 import { isPokewalletConfigured } from "@/lib/pokewallet";
 import { searchCards, searchSets } from "@/lib/scryfall";
 
@@ -62,6 +64,10 @@ export default function MarkedPage({ searchParams }: MarkedPageProps) {
             </Suspense>
           </div>
         </section>
+
+        <div className="mt-16">
+          <PartnerBanner banner={getPageLeaderboardBanner("marked")} />
+        </div>
       </div>
     </main>
   );

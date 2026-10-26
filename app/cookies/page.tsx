@@ -16,8 +16,17 @@ export default function CookiesPage() {
       <h2>Status</h2>
       <p>
         Untap.dk sætter <strong>ikke</strong> egne analyse- eller
-        markedsføringscookies. Vi har heller ikke et cookiebanner, fordi vi ikke
-        bruger ikke-nødvendige cookies til tracking.
+        markedsføringscookies. Vi har heller ikke et cookiebanner til egen
+        tracking.
+      </p>
+
+      <h2>Partnerannoncer</h2>
+      <p>
+        På nogle sider viser vi affiliate-bannere via Partner Ads. Når banneret
+        indlæses, hentes billede/klik-URL fra partner-ads.com (og i praksis
+        butikkens eget bannerhost). Hvis du klikker på en annonce, kan Partner
+        Ads og/eller butikken sætte cookies i deres eget domæne for at registrere
+        klikket. Det styres af dem — ikke af Untap.dk.
       </p>
 
       <h2>Nødvendig drift</h2>

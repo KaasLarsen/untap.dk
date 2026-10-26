@@ -21,8 +21,10 @@ export default function OmPage() {
       </p>
       <p>
         Untap.dk er <strong>ikke en webshop</strong>. Vi sælger ikke kort, packs
-        eller merchandise. Eventuelle eksterne butikslinks kan komme senere —
-        indtil da markedsfører vi ikke forhandlere på sitet.
+        eller merchandise. Vi viser affiliate-annoncer og links til eksterne
+        butikker (via Partner Ads), så du kan købe hos forhandlere som
+        NextLevelGames og Kelz0r. Se{" "}
+        <Link href="/kilder">kilder &amp; data</Link> for listen.
       </p>
 
       <h2>Kontakt</h2>

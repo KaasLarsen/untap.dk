@@ -16,8 +16,8 @@ export default function KilderPage() {
     >
       <p>
         Untap.dk trækker på eksterne API’er og offentlige kilder. Nedenfor er de
-        kilder, der er koblet ind i kodebasen i dag. Butiks-/affiliatepartnere
-        er ikke en del af sitet endnu.
+        kilder, der er koblet ind i kodebasen i dag, plus butikspartnere via
+        Partner Ads.
       </p>
 
       <h2>Scryfall</h2>
@@ -64,9 +64,39 @@ export default function KilderPage() {
 
       <h2>Butikspartnere</h2>
       <p>
-        Partnere kommer senere. Untap.dk viser ikke forhandlerpartnere eller
-        affiliate-lister endnu.
+        Untap.dk viser affiliate-annoncer og kan linke til danske forhandlere
+        via{" "}
+        <a
+          href="https://www.partner-ads.com/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Partner Ads
+        </a>
+        . Når du klikker på en partnerannonce eller et produktlink, sendes du
+        via Partner Ads til butikken. Untap.dk kan modtage provision for
+        køb/trafik.
       </p>
+      <ul>
+        <li>
+          <a
+            href="https://www.nextlevelgames.dk/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            NextLevelGames.dk
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://www.kelz0r.dk/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Kelz0r.dk
+          </a>
+        </li>
+      </ul>
 
       <h2>Fejl og mangler</h2>
       <p>
