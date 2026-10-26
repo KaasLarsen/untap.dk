@@ -1,5 +1,5 @@
 /**
- * Scryfall only exposes current mid prices — no time series.
+ * Spot prices only — no full time series on the card detail page yet.
  * Keep this honest until we snapshot history ourselves.
  */
 export function PriceHistoryNote() {
@@ -15,9 +15,8 @@ export function PriceHistoryNote() {
         Prishistorik
       </h2>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-parchment-muted sm:text-base">
-        Scryfall giver kun den aktuelle EUR-midpris. Grafer kræver daglige
-        snapshots eller en historik-API — dem har vi endnu ikke. Ingen falske
-        kurver her.
+        Her viser vi kun den aktuelle EUR-midpris. Fuld prishistorik kræver
+        daglige snapshots — dem har vi endnu ikke. Ingen falske kurver her.
       </p>
     </section>
   );

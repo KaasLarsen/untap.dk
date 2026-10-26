@@ -26,7 +26,7 @@ export async function generateMetadata({
 
   return {
     title: card.name,
-    description: `${card.name} — ${card.set_name}. Aktuel Scryfall EUR-pris på untap.dk Marked.`,
+    description: `${card.name} — ${card.set_name}. Aktuel EUR-pris på untap.dk Marked.`,
   };
 }
 
@@ -90,7 +90,7 @@ async function MarkedCardDetail({ params }: CardPageProps) {
             {formatEurPriceOrDash(card)}
           </p>
           <p className="mt-2 text-sm text-parchment-muted">
-            Scryfall EUR mid · papir
+            EUR mid
           </p>
 
           {card.type_line ? (

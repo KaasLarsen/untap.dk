@@ -71,7 +71,7 @@ function PriceTooltip({
 
 export function PriceTrendChart({
   data,
-  title = "Prishistorik (CardMarket EUR)",
+  title = "Prishistorik (EUR)",
   emptyMessage = "Ingen prisdata tilgængelig for dette kort.",
 }: PriceTrendChartProps) {
   if (!data.length) {
@@ -96,7 +96,7 @@ export function PriceTrendChart({
           {title}
         </h3>
         <p className="text-xs text-parchment-muted">
-          Baseret på CardMarket-gennemsnit (30 / 7 / 1 dag + trend)
+          Gennemsnit over 30 / 7 / 1 dag + trend
         </p>
       </header>
 

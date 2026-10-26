@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   return {
     title: set.name,
-    description: `${set.name} (${set.code.toUpperCase()}) — kort og Scryfall EUR-priser på untap.dk Marked.`,
+    description: `${set.name} (${set.code.toUpperCase()}) — kort og EUR-priser på untap.dk Marked.`,
   };
 }
 
@@ -67,7 +67,7 @@ async function MarkedSetDetail({ params }: SetPageProps) {
           : ""}
       </p>
       <p className="mt-4 text-sm text-parchment-muted">
-        Viser op til 48 print med aktuel Scryfall EUR-pris.
+        Viser op til 48 print med aktuel EUR-pris.
       </p>
 
       <MarkedCardGrid

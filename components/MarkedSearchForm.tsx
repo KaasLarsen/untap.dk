@@ -50,8 +50,8 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
 
       <p className="text-sm text-parchment-muted">
         {tab === "serier"
-          ? "Søg på serienavn eller set-kode. Priser er Scryfall EUR mid — aktuelle papirpriser."
-          : "Søg på kortnavn, eller brug Scryfall-syntax som set:mh3. Priser er Scryfall EUR mid."}
+          ? "Søg på serienavn eller set-kode. Priser er EUR mid."
+          : "Søg på kortnavn, eller brug søgesyntax som set:mh3. Priser er EUR mid."}
       </p>
     </form>
   );

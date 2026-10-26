@@ -10,7 +10,7 @@ import { searchCards, searchSets } from "@/lib/scryfall";
 export const metadata: Metadata = {
   title: "Marked",
   description:
-    "Søg Magic-kort og serier med Scryfall EUR-priser, og se CardMarket-pristrends via PokéWallet.",
+    "Søg Magic-kort og serier med aktuelle EUR-priser, og se pristrends over tid.",
 };
 
 type MarkedPageProps = {
@@ -41,8 +41,8 @@ export default function MarkedPage({ searchParams }: MarkedPageProps) {
           untap.dk Marked
         </h1>
         <p className="animate-fade-rise delay-2 mt-5 max-w-2xl text-base leading-relaxed text-parchment-muted sm:text-lg">
-          Find aktuelle papirpriser via Scryfall, søg på kort eller serier, og se
-          CardMarket EUR-trends via PokéWallet.
+          Find aktuelle EUR-priser, søg på kort eller serier, og se
+          pristrends over tid.
         </p>
 
         <Suspense fallback={<MarkedSearchFallback />}>
@@ -51,11 +51,10 @@ export default function MarkedPage({ searchParams }: MarkedPageProps) {
 
         <section className="animate-fade-rise delay-3 mt-16 border-t border-line pt-12">
           <h2 className="font-display text-2xl tracking-tight text-parchment sm:text-3xl">
-            CardMarket-pristrends
+            Pristrends
           </h2>
           <p className="mt-3 max-w-xl text-base leading-relaxed text-parchment-muted">
-            Søg et Magic-kort og se EUR-bevægelsen (30 / 7 / 1 dag + trend) fra
-            PokéWallet.
+            Søg et Magic-kort og se EUR-bevægelsen (30 / 7 / 1 dag + trend).
           </p>
           <div className="mt-8 max-w-3xl">
             <Suspense fallback={<MarkedLookupFallback />}>

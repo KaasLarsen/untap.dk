@@ -245,7 +245,7 @@ export async function Decklist({
               {formatEurEstimate(price.total)}
             </p>
             <p className="mt-0.5 text-xs text-parchment-muted">
-              Scryfall EUR
+              EUR mid
               {price.missingCards > 0
                 ? ` · ${price.missingCards} kort uden pris`
                 : ""}

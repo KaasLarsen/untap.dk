@@ -27,8 +27,7 @@ export async function GET(request: Request) {
       {
         ...result,
         error: "missing_key",
-        message:
-          "POKEWALLET_KEY mangler. Tilføj nøglen i .env.local (se .env.example).",
+        message: "Pristrends er midlertidigt utilgængelige.",
       },
       { status: 503 },
     );

@@ -35,7 +35,7 @@ export function MarkedPriceLookup({
   const [error, setError] = useState<string | null>(
     initiallyConfigured
       ? null
-      : "POKEWALLET_KEY mangler. Tilføj nøglen i .env.local for at hente live priser.",
+      : "Pristrends er midlertidigt utilgængelige.",
   );
   const [pending, startTransition] = useTransition();
 
@@ -67,7 +67,7 @@ export function MarkedPriceLookup({
         if (!data.points.length) {
           setError(
             data.cardName
-              ? `Fandt “${data.cardName}”, men ingen CardMarket-trend at plotte.`
+              ? `Fandt “${data.cardName}”, men ingen pristrend at plotte.`
               : `Ingen match for “${trimmed}”.`,
           );
         } else {
@@ -96,7 +96,7 @@ export function MarkedPriceLookup({
 
   const chartTitle = result?.cardName
     ? `${result.cardName}${result.setName ? ` · ${result.setName}` : ""}`
-    : "Prishistorik (CardMarket EUR)";
+    : "Prishistorik (EUR)";
 
   return (
     <div className="space-y-8">
