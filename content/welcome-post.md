@@ -16,4 +16,4 @@ Vi bygger stedet, hvor du starter din tur: **Untap, Upkeep, Draw.** Her samler v
 
 ## Vi bygger i mørket
 
-untap.dk er stadig under opbygning. Layoutet er her, indholdet vokser, og Marked viser allerede aktuelle EUR-priser (prishistorik kommer senere). Velkommen ombord — tænd lampen, untap dine lands, og træk det næste kort.
+untap.dk er stadig under opbygning. Layoutet er her, indholdet vokser, og Marked viser aktuelle EUR-priser plus sparsomme Cardmarket-pristrends via PokéWallet. Velkommen ombord — tænd lampen, untap dine lands, og træk det næste kort.

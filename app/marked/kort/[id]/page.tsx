@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { PriceHistoryNote } from "@/components/PriceHistoryNote";
+import { CardPriceHistory } from "@/components/CardPriceHistory";
 import {
   formatEurPriceOrDash,
   rarityLabelDa,
@@ -111,7 +111,11 @@ async function MarkedCardDetail({ params }: CardPageProps) {
             </Link>
           </p>
 
-          <PriceHistoryNote />
+          <CardPriceHistory
+            cardName={card.name}
+            setName={card.set_name}
+            setCode={card.set}
+          />
         </div>
       </div>
 

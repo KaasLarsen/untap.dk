@@ -52,13 +52,14 @@ export default function KilderPage() {
 
       <h2>PokéWallet / Cardmarket</h2>
       <p>
-        Pristrends i EUR kan hentes via{" "}
+        Sparsomme EUR-pristrends (gennemsnit over 30 / 7 / 1 dag + trend) på
+        Marked og kort-sider hentes via{" "}
         <a href="https://pokewallet.io/" rel="noopener noreferrer" target="_blank">
           PokéWallet
         </a>
-        , som eksponerer Cardmarket-priser. Funktionen er valgfri og kræver en
-        konfigureret API-nøgle. Priser er vejledende og kan afvige fra den
-        faktiske markedspris.
+        , som eksponerer Cardmarket-priser. Det er ikke daglige snapshots.
+        Funktionen er valgfri og kræver en konfigureret API-nøgle. Priser er
+        vejledende og kan afvige fra den faktiske markedspris.
       </p>
 
       <h2>Butikspartnere</h2>
