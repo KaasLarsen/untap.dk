@@ -15,7 +15,7 @@ import {
   type FormatEvent,
   type MetagameArchetype,
 } from "@/lib/mtgtop8";
-import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
+import { getCheapestPaperPrint, type ScryfallCard } from "@/lib/scryfall";
 
 export interface TournamentDeckCard {
   name: string;
@@ -210,7 +210,7 @@ async function resolveCardsForPricing(
   const unique = [...new Set(names)];
   const results = await Promise.all(
     unique.map(async (name) => {
-      const card = await getCardByName(name);
+      const card = await getCheapestPaperPrint(name);
       return [name, card] as const;
     }),
   );
@@ -219,7 +219,7 @@ async function resolveCardsForPricing(
 
 /**
  * Rough archetype paper cost from the median of a few recent decklists
- * (Scryfall EUR mid).
+ * (cheapest Scryfall paper EUR).
  */
 export async function getArchetypePriceEstimate(
   format: string,

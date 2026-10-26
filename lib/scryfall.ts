@@ -98,6 +98,55 @@ export async function getCardByName(
   }
 }
 
+/**
+ * Billigste papir-print med Scryfall EUR — til deck-/archetype-estimater.
+ * Undgår /cards/named-defaults (digitale Masters, dyre special-prints, null EUR).
+ */
+export async function getCheapestPaperPrint(
+  cardName: string,
+): Promise<ScryfallCard | null> {
+  "use cache";
+  cacheLife("days");
+
+  const trimmed = cardName.trim();
+  if (!trimmed) return null;
+
+  try {
+    const exactName = trimmed.replaceAll('"', "");
+    const params = new URLSearchParams({
+      q: `!"${exactName}" game:paper`,
+      unique: "prints",
+      order: "eur",
+      dir: "asc",
+    });
+    const response = await fetch(`${BASE_URL}/cards/search?${params}`, {
+      headers: SCRYFALL_HEADERS,
+    });
+
+    if (response.ok) {
+      const data = (await response.json()) as { data?: ScryfallCard[] };
+      const cheapest = (data.data ?? []).find((card) => {
+        const raw = card.prices?.eur;
+        if (!raw) return false;
+        const value = Number.parseFloat(raw);
+        return Number.isFinite(value);
+      });
+      if (cheapest) return normalizeCard(cheapest);
+    } else if (response.status !== 404) {
+      throw new Error(`Scryfall API fejl: ${response.statusText}`);
+    }
+
+    // Fuzzy/odd names or empty search → named fallback (may still lack EUR).
+    return getCardByName(trimmed);
+  } catch (error) {
+    console.error(
+      `Kunne ikke hente billigste papir-print for "${cardName}":`,
+      error,
+    );
+    return getCardByName(trimmed);
+  }
+}
+
 export async function getCardById(id: string): Promise<ScryfallCard | null> {
   "use cache";
   cacheLife("days");

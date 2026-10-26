@@ -1,6 +1,10 @@
 import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
 import { normalizeCardName } from "@/lib/decklist-text";
-import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
+import {
+  getCardByName,
+  getCheapestPaperPrint,
+  type ScryfallCard,
+} from "@/lib/scryfall";
 import type { TournamentDeckCard } from "@/lib/tournaments";
 import { DecklistTooltip } from "./DecklistTooltip";
 
@@ -121,6 +125,19 @@ async function resolveCards(
   return new Map(results);
 }
 
+async function resolveCardsForPricing(
+  names: string[],
+): Promise<Map<string, ScryfallCard | null>> {
+  const unique = [...new Set(names)];
+  const results = await Promise.all(
+    unique.map(async (name) => {
+      const card = await getCheapestPaperPrint(name);
+      return [name, card] as const;
+    }),
+  );
+  return new Map(results);
+}
+
 function groupEntriesByType(
   entries: DecklistEntry[],
   cards: Map<string, ScryfallCard | null>,
@@ -222,10 +239,14 @@ export async function Decklist({
   const entries = structuredEntries
     ? normalizeEntries(structuredEntries)
     : parseDecklist(raw ?? "");
-  const cards = await resolveCards(entries.map((entry) => entry.name));
+  const names = entries.map((entry) => entry.name);
+  const [cards, pricedCards] = await Promise.all([
+    resolveCards(names),
+    resolveCardsForPricing(names),
+  ]);
   const main = entries.filter((entry) => entry.section === "main");
   const sideboard = entries.filter((entry) => entry.section === "sideboard");
-  const price = estimateDeckPriceEur(entries, cards);
+  const price = estimateDeckPriceEur(entries, pricedCards);
 
   return (
     <article className="w-full text-parchment">
@@ -248,7 +269,7 @@ export async function Decklist({
               {formatEurEstimate(price.total)}
             </p>
             <p className="mt-0.5 text-xs text-parchment-muted">
-              EUR mid
+              Billigste papir · Scryfall EUR
               {price.missingCards > 0
                 ? ` · ${price.missingCards} kort uden pris`
                 : ""}

@@ -73,7 +73,8 @@ async function ArchetypeDecks({
             {price.formatted}
           </p>
           <p className="mt-0.5 text-xs text-parchment-muted">
-            EUR mid · median af {price.sampleCount} seneste{" "}
+            Billigste papir · Scryfall EUR · median af{" "}
+            {price.sampleCount} seneste{" "}
             {price.sampleCount === 1 ? "deck" : "decks"}
           </p>
         </div>
