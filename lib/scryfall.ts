@@ -117,6 +117,7 @@ export type SearchCardsOptions = {
 /**
  * Søger efter kort baseret på en delvis tekststreng (perfekt til en søgebar).
  * Understøtter fuld Scryfall-syntax, fx `set:mh3` eller `e:dmu t:creature`.
+ * Almindelige navne uden operatorer søges som navnematch (`name:…`).
  */
 export async function searchCards(
   query: string,
@@ -130,10 +131,11 @@ export async function searchCards(
   const unique = options.unique ?? "cards";
   const order = options.order ?? "name";
   const limit = options.limit ?? 24;
+  const scryfallQuery = toScryfallSearchQuery(query.trim());
 
   try {
     const params = new URLSearchParams({
-      q: query.trim(),
+      q: scryfallQuery,
       unique,
       order,
     });
@@ -147,6 +149,51 @@ export async function searchCards(
     return (data.data || []).slice(0, limit).map(normalizeCard);
   } catch (error) {
     console.error(`Fejl under søgning efter "${query}":`, error);
+    return [];
+  }
+}
+
+/** True when the query looks like Scryfall search syntax, not a plain card name. */
+function looksLikeScryfallSyntax(query: string): boolean {
+  return /[:"()<>={}]/.test(query);
+}
+
+/**
+ * Plain names → `name:"…"`. Keeps full Scryfall syntax untouched.
+ */
+export function toScryfallSearchQuery(query: string): string {
+  const trimmed = query.trim();
+  if (!trimmed) return trimmed;
+  if (looksLikeScryfallSyntax(trimmed)) return trimmed;
+  return `name:"${trimmed.replaceAll('"', "")}"`;
+}
+
+/**
+ * Kortnavnsforslag til typeahead (Scryfall /cards/autocomplete).
+ */
+export async function autocompleteCardNames(
+  query: string,
+  limit = 12,
+): Promise<string[]> {
+  "use cache";
+  cacheLife("hours");
+
+  const q = query.trim();
+  if (q.length < 2 || looksLikeScryfallSyntax(q)) return [];
+
+  try {
+    const params = new URLSearchParams({ q });
+    const response = await fetch(
+      `${BASE_URL}/cards/autocomplete?${params}`,
+      { headers: SCRYFALL_HEADERS },
+    );
+
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as { data?: string[] };
+    return (data.data ?? []).slice(0, limit);
+  } catch (error) {
+    console.error(`Fejl under autocomplete for "${query}":`, error);
     return [];
   }
 }
