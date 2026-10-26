@@ -15,7 +15,7 @@ const EVENT_RE =
   /<a href=event\?e=(\d+)&f=([A-Za-z0-9]+)>([^<]+)<\/a>(?:\s*@\s*<a[^>]*>([^<]+)<\/a>)?/g;
 
 const ARCHETYPE_DECK_RE =
-  /event\?e=(\d+)&d=(\d+)[^>]*>([^<]+)<\/a>[\s\S]{0,220}?player[^>]*>([^<]+)/gi;
+  /event\?e=(\d+)&d=(\d+)[^>]*>([^<]+)<\/a>\s*<\/td>\s*<td><a class=player[^>]*>([^<]+)<\/a><\/td>\s*<td><a href=\/event\?e=\d+[^>]*>([^<]+)<\/a><\/td>\s*<td[^>]*>[\s\S]*?<\/td>\s*<td>([^<]*)<\/td>\s*<td>(\d{2}\/\d{2}\/\d{2})<\/td>/gi;
 
 export type MetagameArchetype = {
   id: string;
@@ -215,9 +215,9 @@ export async function fetchArchetypeDeckRefs(
       deckId: match[2],
       deckName: decodeHtml(match[3].trim()),
       playerName: decodeHtml(match[4].trim()),
-      rank: String(decks.length + 1),
-      tournamentName: "MTGTop8",
-      date: "",
+      tournamentName: decodeHtml(match[5].trim()),
+      rank: match[6].trim(),
+      date: dmyToIso(match[7]),
       format,
     });
     if (decks.length >= limit) break;

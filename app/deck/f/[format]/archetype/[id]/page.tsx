@@ -8,6 +8,7 @@ import { PageShell } from "@/components/PageShell";
 import { getFormatBySlug } from "@/lib/formats";
 import {
   getArchetypeDeckRefs,
+  getArchetypePriceEstimate,
   getFormatMetagame,
 } from "@/lib/tournaments";
 
@@ -56,8 +57,31 @@ async function ArchetypeDecks({
   archetypeId: string;
   meta: string;
 }) {
-  const decks = await getArchetypeDeckRefs(formatCode, archetypeId, meta);
-  return <DeckRefList decks={decks} formatSlug={formatSlug} />;
+  const [decks, price] = await Promise.all([
+    getArchetypeDeckRefs(formatCode, archetypeId, meta),
+    getArchetypePriceEstimate(formatCode, archetypeId, meta),
+  ]);
+
+  return (
+    <div className="space-y-8">
+      {price ? (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-parchment-muted">
+            Ca. pris at samle
+          </p>
+          <p className="mt-1 font-display text-2xl font-semibold text-accent">
+            {price.formatted}
+          </p>
+          <p className="mt-0.5 text-xs text-parchment-muted">
+            Scryfall EUR · median af {price.sampleCount} seneste{" "}
+            {price.sampleCount === 1 ? "deck" : "decks"}
+          </p>
+        </div>
+      ) : null}
+
+      <DeckRefList decks={decks} formatSlug={formatSlug} />
+    </div>
+  );
 }
 
 async function ArchetypeContent({ params, searchParams }: PageProps) {

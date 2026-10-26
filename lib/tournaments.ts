@@ -1,4 +1,5 @@
 import { cacheLife } from "next/cache";
+import { estimateDeckPriceEur, formatEurEstimate } from "@/lib/deck-price";
 import { parseDecklistText } from "@/lib/decklist-text";
 import type { FormatCode } from "@/lib/formats";
 import { getFormatBySlug } from "@/lib/formats";
@@ -14,6 +15,7 @@ import {
   type FormatEvent,
   type MetagameArchetype,
 } from "@/lib/mtgtop8";
+import { getCardByName, type ScryfallCard } from "@/lib/scryfall";
 
 export interface TournamentDeckCard {
   name: string;
@@ -185,4 +187,77 @@ export async function hydrateDeckRefs(
     }
   }
   return decks;
+}
+
+export type ArchetypePriceEstimate = {
+  total: number;
+  formatted: string;
+  sampleCount: number;
+};
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+  return sorted[mid];
+}
+
+async function resolveCardsForPricing(
+  names: string[],
+): Promise<Map<string, ScryfallCard | null>> {
+  const unique = [...new Set(names)];
+  const results = await Promise.all(
+    unique.map(async (name) => {
+      const card = await getCardByName(name);
+      return [name, card] as const;
+    }),
+  );
+  return new Map(results);
+}
+
+/**
+ * Rough archetype paper cost from the median of a few recent decklists
+ * (Scryfall EUR mid).
+ */
+export async function getArchetypePriceEstimate(
+  format: string,
+  archetypeId: string,
+  meta: string,
+  sampleSize = 3,
+): Promise<ArchetypePriceEstimate | null> {
+  "use cache";
+  cacheLife("hours");
+
+  try {
+    const refs = await getArchetypeDeckRefs(format, archetypeId, meta);
+    if (refs.length === 0) return null;
+
+    const decks = await hydrateDeckRefs(refs, sampleSize);
+    if (decks.length === 0) return null;
+
+    const totals: number[] = [];
+    for (const deck of decks) {
+      const cards = await resolveCardsForPricing(
+        deck.cards.map((card) => card.name),
+      );
+      const estimate = estimateDeckPriceEur(deck.cards, cards);
+      if (estimate.pricedCards > 0) {
+        totals.push(estimate.total);
+      }
+    }
+
+    if (totals.length === 0) return null;
+
+    const total = median(totals);
+    return {
+      total,
+      formatted: formatEurEstimate(total),
+      sampleCount: totals.length,
+    };
+  } catch (error) {
+    console.error("Kunne ikke estimere archetype-pris:", error);
+    return null;
+  }
 }
