@@ -1,6 +1,8 @@
 import type { ScryfallCard } from "@/lib/scryfall";
 
-export function parseEurPrice(card: ScryfallCard | null | undefined): number | null {
+export function parseEurPrice(
+  card: Pick<ScryfallCard, "prices"> | null | undefined,
+): number | null {
   const raw = card?.prices?.eur;
   if (raw == null || raw === "") return null;
   const value = Number.parseFloat(raw);
@@ -17,7 +19,9 @@ export function formatEurPrice(total: number): string {
   }).format(total);
 }
 
-export function formatEurPriceOrDash(card: ScryfallCard | null | undefined): string {
+export function formatEurPriceOrDash(
+  card: Pick<ScryfallCard, "prices"> | null | undefined,
+): string {
   const value = parseEurPrice(card);
   return value == null ? "—" : formatEurPrice(value);
 }

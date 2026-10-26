@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { MarkedOtherPrints } from "@/components/MarkedOtherPrints";
 import { PriceHistoryNote } from "@/components/PriceHistoryNote";
 import {
   formatEurPriceOrDash,
@@ -114,6 +115,10 @@ async function MarkedCardDetail({ params }: CardPageProps) {
           <PriceHistoryNote />
         </div>
       </div>
+
+      <Suspense fallback={null}>
+        <MarkedOtherPrints cardName={card.name} currentId={card.id} />
+      </Suspense>
 
       <p className="mt-14">
         <Link

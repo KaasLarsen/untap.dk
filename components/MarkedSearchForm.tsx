@@ -10,11 +10,15 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { formatEurPriceOrDash } from "@/lib/market-price";
+import type { CardPrintSummary } from "@/lib/scryfall";
 
 type MarkedSearchFormProps = {
   q: string;
   tab: "kort" | "serier";
 };
+
+type Step = "names" | "prints";
 
 const DEBOUNCE_MS = 200;
 
@@ -22,7 +26,10 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
   const router = useRouter();
   const listboxId = useId();
   const [value, setValue] = useState(q);
+  const [step, setStep] = useState<Step>("names");
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [prints, setPrints] = useState<CardPrintSummary[]>([]);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
@@ -30,22 +37,13 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    setValue(q);
-  }, [q]);
-
-  useEffect(() => {
-    if (tab !== "kort") {
-      setSuggestions([]);
-      setOpen(false);
-      setLoading(false);
+    if (tab !== "kort" || step !== "names") {
+      abortRef.current?.abort();
       return;
     }
 
     const trimmed = value.trim();
     if (trimmed.length < 2 || /[:"()<>={}]/.test(trimmed)) {
-      setSuggestions([]);
-      setOpen(false);
-      setLoading(false);
       abortRef.current?.abort();
       return;
     }
@@ -84,13 +82,20 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
       window.clearTimeout(timer);
       abortRef.current?.abort();
     };
-  }, [value, tab]);
+  }, [value, tab, step]);
 
   function clearBlurTimer() {
     if (blurTimer.current != null) {
       window.clearTimeout(blurTimer.current);
       blurTimer.current = null;
     }
+  }
+
+  function resetToNamesStep() {
+    setStep("names");
+    setPrints([]);
+    setSelectedName(null);
+    setActiveIndex(-1);
   }
 
   function goToSearch(nextQuery: string, nextTab: "kort" | "serier" = tab) {
@@ -100,51 +105,124 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
     if (trimmed) params.set("q", trimmed);
     setOpen(false);
     setSuggestions([]);
+    resetToNamesStep();
     router.push(`/marked?${params.toString()}`);
   }
 
-  function selectSuggestion(name: string) {
+  function goToCard(id: string) {
+    setOpen(false);
+    setSuggestions([]);
+    resetToNamesStep();
+    router.push(`/marked/kort/${encodeURIComponent(id)}`);
+  }
+
+  function loadPrints(name: string) {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setValue(name);
-    goToSearch(name, "kort");
+    setSelectedName(name);
+    setStep("prints");
+    setPrints([]);
+    setActiveIndex(-1);
+    setOpen(true);
+    setLoading(true);
+
+    fetch(`/api/cards/prints?q=${encodeURIComponent(name)}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("prints failed");
+        const body = (await response.json()) as { data?: CardPrintSummary[] };
+        if (controller.signal.aborted) return;
+        const next = body.data ?? [];
+        setPrints(next);
+        setActiveIndex(next.length > 0 ? 0 : -1);
+        setOpen(true);
+        if (next.length === 0) {
+          // Exact name with no print hits — fall back to search results.
+          goToSearch(name, "kort");
+        }
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        setPrints([]);
+        goToSearch(name, "kort");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+  }
+
+  function selectSuggestion(name: string) {
+    loadPrints(name);
+  }
+
+  function selectPrint(print: CardPrintSummary) {
+    goToCard(print.id);
   }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (tab === "kort" && activeIndex >= 0 && suggestions[activeIndex]) {
+    if (tab !== "kort") {
+      goToSearch(value);
+      return;
+    }
+
+    if (step === "prints" && activeIndex >= 0 && prints[activeIndex]) {
+      selectPrint(prints[activeIndex]);
+      return;
+    }
+
+    if (step === "names" && activeIndex >= 0 && suggestions[activeIndex]) {
       selectSuggestion(suggestions[activeIndex]);
       return;
     }
+
     goToSearch(value);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (!open || suggestions.length === 0) {
-      if (event.key === "Escape") setOpen(false);
+    const options = step === "prints" ? prints : suggestions;
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      if (step === "prints") {
+        resetToNamesStep();
+        setOpen(suggestions.length > 0);
+        return;
+      }
+      setOpen(false);
+      setActiveIndex(-1);
       return;
     }
 
+    if (!open || options.length === 0) return;
+
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActiveIndex((index) => (index + 1) % suggestions.length);
+      setActiveIndex((index) => (index + 1) % options.length);
       return;
     }
 
     if (event.key === "ArrowUp") {
       event.preventDefault();
       setActiveIndex((index) =>
-        index <= 0 ? suggestions.length - 1 : index - 1,
+        index <= 0 ? options.length - 1 : index - 1,
       );
-      return;
-    }
-
-    if (event.key === "Escape") {
-      event.preventDefault();
-      setOpen(false);
-      setActiveIndex(-1);
     }
   }
 
-  const showList = tab === "kort" && open && suggestions.length > 0;
+  const canSuggestNames =
+    tab === "kort" &&
+    step === "names" &&
+    value.trim().length >= 2 &&
+    !/[:"()<>={}]/.test(value.trim());
+  const showNames = canSuggestNames && open && suggestions.length > 0;
+  const showPrints = tab === "kort" && step === "prints" && open;
+  const showList = showNames || showPrints;
 
   return (
     <form
@@ -172,13 +250,21 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
             type="search"
             value={value}
             onChange={(event) => {
-              setValue(event.target.value);
-              setOpen(true);
+              const next = event.target.value;
+              setValue(next);
+              resetToNamesStep();
+              if (next.trim().length < 2 || /[:"()<>={}]/.test(next.trim())) {
+                setSuggestions([]);
+                setOpen(false);
+                setLoading(false);
+              } else {
+                setOpen(true);
+              }
             }}
             onKeyDown={onKeyDown}
             onFocus={() => {
               clearBlurTimer();
-              if (suggestions.length > 0) setOpen(true);
+              if (step === "prints" || suggestions.length > 0) setOpen(true);
             }}
             onBlur={() => {
               clearBlurTimer();
@@ -204,7 +290,7 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
             className="min-h-12 w-full border border-line bg-ink-elevated/80 px-4 text-base text-parchment outline-none transition-[border-color,box-shadow] placeholder:text-parchment-muted/70 focus:border-accent/50 focus:shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent)_35%,transparent)]"
           />
 
-          {showList ? (
+          {showNames ? (
             <ul
               id={listboxId}
               role="listbox"
@@ -236,6 +322,76 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
               })}
             </ul>
           ) : null}
+
+          {showPrints ? (
+            <ul
+              id={listboxId}
+              role="listbox"
+              aria-label={`Serier for ${selectedName ?? "kort"}`}
+              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-80 overflow-auto border border-line bg-ink-elevated py-1 shadow-[0_16px_40px_-24px_rgba(11,18,32,0.45)]"
+            >
+              <li role="presentation" className="border-b border-line px-4 py-2">
+                <button
+                  type="button"
+                  className="text-left text-xs text-parchment-muted transition-colors hover:text-parchment"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    resetToNamesStep();
+                    setOpen(suggestions.length > 0);
+                  }}
+                >
+                  ← Tilbage til navneforslag
+                </button>
+                <p className="mt-1 text-sm text-parchment">
+                  Vælg serie for{" "}
+                  <span className="text-accent-bright">
+                    {selectedName ?? value}
+                  </span>
+                </p>
+              </li>
+              {loading && prints.length === 0 ? (
+                <li className="px-4 py-3 text-sm text-parchment-muted">
+                  Henter serier…
+                </li>
+              ) : null}
+              {prints.map((print, index) => {
+                const active = index === activeIndex;
+                return (
+                  <li key={print.id} role="presentation">
+                    <button
+                      id={`${listboxId}-option-${index}`}
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={
+                        active
+                          ? "flex w-full items-baseline justify-between gap-3 px-4 py-2.5 text-left text-sm text-parchment bg-accent/10"
+                          : "flex w-full items-baseline justify-between gap-3 px-4 py-2.5 text-left text-sm text-parchment transition-colors hover:bg-ink-soft"
+                      }
+                      onMouseDown={(event) => event.preventDefault()}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onClick={() => selectPrint(print)}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate">
+                          {print.set_name}{" "}
+                          <span className="uppercase tracking-wide text-parchment-muted">
+                            ({print.set})
+                          </span>
+                        </span>
+                        <span className="text-xs text-parchment-muted">
+                          #{print.collector_number}
+                        </span>
+                      </span>
+                      <span className="shrink-0 tabular-nums text-parchment">
+                        {formatEurPriceOrDash(print)}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
         </div>
         <button
           type="submit"
@@ -249,8 +405,12 @@ export function MarkedSearchForm({ q, tab }: MarkedSearchFormProps) {
         {tab === "serier"
           ? "Søg på serienavn eller set-kode. Priser er EUR mid."
           : loading
-            ? "Henter kortforslag…"
-            : "Begynd at skrive — vi foreslår kortnavne. Du kan også søge med set:mh3."}
+            ? step === "prints"
+              ? "Henter serier…"
+              : "Henter kortforslag…"
+            : step === "prints"
+              ? "Vælg den serie, du vil se prisen for."
+              : "Begynd at skrive — vi foreslår kortnavne. Vælg et navn for at se serier."}
       </p>
     </form>
   );

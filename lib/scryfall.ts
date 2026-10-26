@@ -213,6 +213,56 @@ export async function autocompleteCardNames(
   }
 }
 
+/** Kompakt printing til serie-valg i typeahead / kortside. */
+export type CardPrintSummary = {
+  id: string;
+  name: string;
+  set: string;
+  set_name: string;
+  collector_number: string;
+  rarity: string;
+  prices: { eur?: string | null };
+  image_uris?: { small: string };
+};
+
+function toPrintSummary(card: ScryfallCard): CardPrintSummary {
+  return {
+    id: card.id,
+    name: card.name,
+    set: card.set,
+    set_name: card.set_name,
+    collector_number: card.collector_number,
+    rarity: card.rarity,
+    prices: { eur: card.prices?.eur ?? null },
+    image_uris: card.image_uris?.small
+      ? { small: card.image_uris.small }
+      : undefined,
+  };
+}
+
+/**
+ * Alle printinger af et eksakt kortnavn (alle serier).
+ * Scryfall: `!"Name"` + unique=prints.
+ */
+export async function getCardPrints(
+  cardName: string,
+  limit = 40,
+): Promise<CardPrintSummary[]> {
+  "use cache";
+  cacheLife("hours");
+
+  const name = cardName.trim().replaceAll('"', "");
+  if (name.length < 2) return [];
+
+  const cards = await searchCards(`!"${name}"`, {
+    unique: "prints",
+    order: "released",
+    limit,
+  });
+
+  return cards.map(toPrintSummary);
+}
+
 export async function getAllSets(): Promise<ScryfallSet[]> {
   "use cache";
   cacheLife("days");
